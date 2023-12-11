@@ -263,8 +263,10 @@ router.post("/attachment-document", async (req, res) => {
 
     const documentType = await DocumentFile.find({});
 
+    console.log("type", type);
+
     const validType = documentType.find(i => i.type === type);
-    console.log("validType", validType);
+    console.log("validType", validType.type);
 
     if (id) {
       if (validContactData !== null) {
@@ -286,12 +288,13 @@ router.post("/attachment-document", async (req, res) => {
                   if (awsRec.Location) {
                     utility.deleteImage(pathToTempFile).then(async () => {
                       const data = { url: awsRec.Location, approved: false };
+                      console.log("data", data);
 
-                      await Contacts.findByIdAndUpdate(
+                      const contactFound = await Contacts.findById(id);
+                      contactFound.docs[validType.type] = data;
+                      const updatedContact = await Contacts.findByIdAndUpdate(
                         id,
-                        {
-                          $set: { [`${validType.type}`]: data },
-                        },
+                        contactFound,
                         { new: true },
                       );
 

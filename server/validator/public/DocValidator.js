@@ -73,15 +73,15 @@ export const ValidId = (req, res, next) => {
   }
 };
 export const ValidContact = (req, res, next) => {
-  const { name, emailOrPhone, CPF, CNPJ } = req.body;
+  const { name, email, phone, CPF, CNPJ } = req.body;
 
-  if (name && emailOrPhone && CPF && CNPJ) {
+  if (name && email && phone && CPF && CNPJ) {
     if (cpf.isValid(CPF)) {
       if (cnpj.isValid(CNPJ)) {
         // if (("" + emailOrPhone).includes("@")) {
         //   next();
         // } else {
-        if (utility.checkValidMobile(emailOrPhone) == true) {
+        if (utility.checkValidMobile(phone) == true) {
           next();
         } else {
           res.json({
@@ -112,10 +112,15 @@ export const ValidContact = (req, res, next) => {
       success: false,
       message: lang.ENTER_NAME.PR,
     });
-  } else if (!emailOrPhone) {
+  } else if (!email) {
     res.json({
       success: false,
-      message: lang.ENTER_EMAIL_PHONE.PR,
+      message: lang.ENTER_EMAIL.PR,
+    });
+  } else if (!phone) {
+    res.json({
+      success: false,
+      message: lang.ENTER_PHONE.PR,
     });
   } else if (!CPF) {
     res.json({

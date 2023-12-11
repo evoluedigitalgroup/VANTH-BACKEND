@@ -34,61 +34,8 @@ const ContactSchema = mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "DocumentRequest",
     },
-    socialContract: {
+    docs: {
       type: Object,
-      default: null,
-    },
-    addressProof: {
-      type: Object,
-      default: null,
-    },
-    balanceIncome: {
-      type: Object,
-      default: null,
-    },
-    balanceSheet: {
-      type: Object,
-      default: null,
-    },
-    partnerIncome: {
-      type: Object,
-      default: null,
-    },
-    billingCustomer: {
-      type: Object,
-      default: null,
-    },
-    partnerDocument: {
-      type: Object,
-      default: null,
-    },
-    updatedBankDebt: {
-      type: Object,
-      default: null,
-    },
-    spouseDocument: {
-      type: Object,
-      default: null,
-    },
-    extractBusiestBank: {
-      type: Object,
-      default: null,
-    },
-    companyPhotos: {
-      type: Object,
-      default: null,
-    },
-    abcCurve: {
-      type: Object,
-      default: null,
-    },
-    CNPJDOC: {
-      type: Object,
-      default: null,
-    },
-    CPFDOC: {
-      type: Object,
-      default: null,
     },
     docStatus: {
       type: Object,

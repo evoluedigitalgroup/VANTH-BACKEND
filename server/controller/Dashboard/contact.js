@@ -77,30 +77,6 @@ router.post(
         searchObj.name = regExpression;
       }
 
-      // if(filter.approved=="approved"){
-      //   filterSearchName={
-      //     approved:
-      //   }
-      // }
-
-      // if (filter) {
-      //   if (filter?.approved == "approved") {
-      //     filterSearchName["socialContract.approved"] = true;
-      //     filterSearchName["addressProof.approved"] = true;
-      //   } else if (filter.transaction == "pending") {
-      //     filterSearchName["socialContract.approved"] = false;
-      //     filterSearchName["addressProof.approved"] = false;
-      //   } else {
-      //     filterSearchName["socialContract.approved"] = true && false;
-      //     filterSearchName["addressProof.approved"] = true && false;
-      //   }
-      // }
-
-      // console.log("filterSearchName", filterSearchName);
-
-      // let arr = [];
-      // let findVal = [];
-
       const totalFindData = await Contacts.find(searchObj).countDocuments();
       const findData = await Contacts.find(searchObj)
         .populate("documentRequest")
@@ -117,58 +93,8 @@ router.post(
           const time = moment(obj.createdAt).locale("pt-br").format("h:mm");
           obj._doc["date"] = date;
           obj._doc["time"] = time;
-          // console.log(
-          //   "obj.documentRequest.requiredPermission",
-          //   obj.documentRequest.requiredPermission,
-          // );
-
-          // Object.keys(obj.documentRequest.requiredPermission).map(i => {
-          //   if (i != "CNPJ" && i != "CPF") {
-          //     arr.push({
-          //       type: i,
-          //       permission: obj.documentRequest.requiredPermission[i],
-          //     });
-          //   }
-          // });
-
-          // findVal.push(arr);
-          // arr = [];
-          // let lengthData = 0;
-          // let lengthCount = 0;
-          // findVal.map(val => {
-          //   val.map(i => {
-          //     if (i.permission === true) {
-          //       lengthData += 1;
-
-          //       if (obj[i.type] !== null) {
-          //         lengthCount += 1;
-          //       }
-          //     }
-          //   });
-          // });
-
-          // if (lengthCount === lengthData) {
-          //   await Contacts.updateMany(
-          //     { _id: { $in: obj.id } },
-          //     { docStatus: "approved" },
-          //   );
-
-          //   obj._doc["status"] = "approved";
-          //   obj._doc["date"] = date;
-          //   obj._doc["time"] = time;
-
-          //   return obj;
-          // } else {
-          //   obj._doc["status"] = "pending";
-          //   obj._doc["date"] = date;
-          //   obj._doc["time"] = time;
-
-          //   return obj;
-          // }
         }),
       );
-      // console.log("arr", arr);
-      // console.log("findVal", findVal);
       res.json({
         success: true,
         data: { findData, totalFindData },
@@ -190,7 +116,10 @@ router.post(
     const { id, action } = req.body;
 
     const findContact = await Contacts.findById({ _id: id });
+
+    //  check if contact found
     if (findContact !== null) {
+      //  For approve action
       if (action === "approved") {
         await Contacts.findByIdAndUpdate(
           id,

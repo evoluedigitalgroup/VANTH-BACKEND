@@ -5,96 +5,33 @@ import validator from "../../validator/public";
 import { v4 as uuidv4 } from "uuid";
 import Document_Request from "../../models/documentRequest";
 import lang from "../../helpers/locale/lang";
+import documentFile from "../../models/documentFile";
 
 router.post("/submit-contact", validator.ValidContact, async (req, res) => {
   const ConId = uuidv4();
   const Reqid = uuidv4();
-  const { name, emailOrPhone, CPF, CNPJ } = req.body;
-  // if (("" + emailOrPhone).includes("@")) {
-  //   const Obj = {
-  //     uuid: ConId,
-  //     name: name,
-  //     email: emailOrPhone.toLowerCase().trim(),
-  //     CPF,
-  //     CNPJ,
-  //   };
-  //   const permission = {
-  //     CPF: true,
-  //     socialContract: true,
-  //     addressProof: true,
-  //     CNPJ: true,
-  //     balanceIncome: true,
-  //     balanceSheet: true,
-  //     partnerIncome: true,
-  //     billingCustomer: true,
-  //     partnerDocument: true,
-  //     updatedBankDebt: true,
-  //     spouseDocument: true,
-  //     extractBusiestBank: true,
-  //     companyPhotos: true,
-  //     abcCurve: true,
-  //   };
-  //   await new Contact(Obj)
-  //     .save()
-  //     .then(async val => {
-  //       const DocReq = {
-  //         uuid: Reqid,
-  //         contacts: val.id,
-  //         requiredPermission: permission,
-  //       };
-  //       res.json({
-  //         success: true,
-  //         data: val,
-  //         message: lang.FORM_FILL_UP_SUCCESSFULLY.PR,
-  //       });
-  //       await new Document_Request(DocReq).save().then(async vals => {
-  //         await Contact.findByIdAndUpdate(
-  //           vals.contacts,
-  //           {
-  //             documentRequest: vals.id,
-  //           },
-  //           { new: true },
-  //         );
-  //       });
-  //     })
-  //     .catch(err => {
-  //       res.json({
-  //         success: false,
-  //         message: lang.SOMETHING_WENT_WRONG.PR,
-  //       });
-  //     })
-  //     .catch(err => {
-  //       res.json({
-  //         success: false,
-  //         message: lang.SOMETHING_WENT_WRONG.PR,
-  //       });
-  //     });
-  // }
+  const { name, email, phone, CPF, CNPJ } = req.body;
 
   const Obj = {
     uuid: ConId,
     name: name,
-    phone: emailOrPhone,
+    phone: phone,
+    email: email,
     CPF,
     CNPJ,
+    docs: {},
   };
 
-  const permission = {
-    CPFDOC: false,
-    socialContract: false,
-    addressProof: false,
-    CNPJDOC: false,
-    balanceIncome: false,
-    balanceSheet: false,
-    partnerIncome: false,
-    billingCustomer: false,
-    partnerDocument: false,
-    updatedBankDebt: false,
-    spouseDocument: false,
-    extractBusiestBank: false,
-    companyPhotos: false,
-    abcCurve: false,
-  };
+  const DocumentFileData = await documentFile.find({});
+
+  const permission = {};
+
+  DocumentFileData.map(i => {
+    permission[i.type] = false;
+    Obj["docs"][i.type] = null;
+  });
+
+  console.log("permission", permission);
 
   await new Contact(Obj)
     .save()
@@ -104,6 +41,8 @@ router.post("/submit-contact", validator.ValidContact, async (req, res) => {
         contacts: val.id,
         requiredPermission: permission,
       };
+
+      console.log("DocReq", DocReq);
 
       await new Document_Request(DocReq).save().then(async vals => {
         const contactData = await Contact.findByIdAndUpdate(

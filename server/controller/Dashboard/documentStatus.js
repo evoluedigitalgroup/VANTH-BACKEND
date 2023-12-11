@@ -30,20 +30,19 @@ router.post(
     if (validType) {
       if (action === "approved") {
         const response = {
-          url: data[validType.type].url,
+          url: data.docs[validType.type].url,
           approved: true,
           approvedBy: adminObj.id,
           approvedDate: new Date(),
         };
         console.log("response", response);
 
-        const updateVal = await Contacts.findByIdAndUpdate(
-          id,
-          {
-            $set: { [`${validType.type}`]: response },
-          },
-          { new: true },
-        );
+        const docs = data.docs;
+        docs[validType.type] = response;
+
+        console.log("docs", docs);
+
+        const updateVal = await Contacts.findByIdAndUpdate(id, { docs });
 
         res.json({
           success: true,
@@ -51,17 +50,15 @@ router.post(
           message: lang.SOCIAL_CONTRACT_SUCCESSFULLY.PR,
         });
       } else {
-        // const response = {
-        //   url: data.socialContract.url,
-        //   approved: false,
-        //   approvedBy: adminObj.id,
-        //   approvedDate: new Date(),
-        // };
         const dataStatus = data.docStatus;
+
+        const docs = data.docs;
+        docs[validType.type] = null;
+
         const updateVal = await Contacts.findByIdAndUpdate(
           id,
           {
-            $set: { [`${validType.type}`]: null },
+            docs,
             docStatus: {
               ...dataStatus,
               [`${validType.type}`]: true,
@@ -81,50 +78,6 @@ router.post(
         success: false,
         message: lang.TYPE_IS_INVALID.PR,
       });
-
-      // if (action === "approved") {
-      //   const response = {
-      //     url: data.addressProof.url,
-      //     approved: true,
-      //     approvedBy: adminObj.id,
-      //     approvedDate: new Date(),
-      //   };
-
-      //   const updateVal = await Contacts.findByIdAndUpdate(
-      //     id,
-      //     {
-      //       addressProof: response,
-      //     },
-      //     { new: true },
-      //   );
-
-      //   res.json({
-      //     success: true,
-      //     data: updateVal,
-      //     message: lang.ADDRESS_PROOF_SUCCESSFULLY.PR,
-      //   });
-      // } else {
-      //   // const response = {
-      //   //   url: data.addressProof.url,
-      //   //   approved: false,
-      //   //   approvedBy: adminObj.id,
-      //   //   approvedDate: new Date(),
-      //   // };
-
-      //   const updateVal = await Contacts.findByIdAndUpdate(
-      //     id,
-      //     {
-      //       addressProof: null,
-      //     },
-      //     { new: true },
-      //   );
-
-      //   res.json({
-      //     success: true,
-      //     data: updateVal,
-      //     message: lang.ADDRESS_PROOF_REJECTED.PR,
-      //   });
-      // }
     }
   },
 );
@@ -174,19 +127,6 @@ router.post(
       let findVal = [];
       // console.log("tempContact ::: ", tempContact);
       const ContactData = await Promise.all(
-        // contactDetails.map(obj => {
-        //   Object.keys(obj.documentRequest.requiredPermission).map(i => {
-        //     if (i != "CNPJ" && i != "CPF") {
-        //       console.log("email ::: ", obj.email);
-        //       console.log(
-        //         " type ::: ",
-        //         i,
-        //         "permission ::: ",
-        //         obj.documentRequest.requiredPermission[i],
-        //       );
-        //     }
-        //   });
-        // }),
         contactDetails.map(async obj => {
           const date = moment(obj.updatedAt)
             .locale("pt-br")
@@ -196,13 +136,6 @@ router.post(
           if (obj.documentRequest.isGenerated) {
             Object.keys(obj.documentRequest.requiredPermission).map(i => {
               if (i != "CNPJ" && i != "CPF") {
-                // console.log("email ::: ", obj.email);
-                // console.log(
-                //   " type ::: ",
-                //   i,
-                //   "permission ::: ",
-                //   obj.documentRequest.requiredPermission[i],
-                // );
                 arr.push({
                   type: i,
                   permission: obj.documentRequest.requiredPermission[i],
@@ -215,8 +148,6 @@ router.post(
             findVal.push(arr);
             arr = [];
 
-            // const findData = findVal.flat(1);
-
             let lengthCount = 0;
             let lengthData = 0;
             findVal.map((val, j) => {
@@ -224,13 +155,6 @@ router.post(
                 if ((obj.email || obj.phone) == i.user) {
                   if (i.permission === true) {
                     lengthData += 1;
-                    // console.log(`iiiiiiii ::: `, i);
-
-                    // console.log(`${val.user}`, obj[val.type]);
-                    // console.log(`${val.user}`, val.permission);
-                    // if (obj[val.type]?.approved === true) {
-                    //   lengthCount += 1;
-                    // }
                     if (i.approved === true) {
                       lengthCount += 1;
                     }
@@ -275,74 +199,10 @@ router.post(
             obj._doc["time"] = time;
             return obj;
           }
-
-          // if (
-          //   obj.documentRequest.requiredPermission.socialContract === true &&
-          //   obj.documentRequest.requiredPermission.proofOfAddress === true
-          // ) {
-          //   if (
-          //     obj.socialContract?.approved != null &&
-          //     obj.addressProof?.approved != null
-          //   ) {
-          //     if (
-          //       obj.socialContract?.approved === true &&
-          //       obj.addressProof?.approved === true
-          //     ) {
-          //       obj._doc["allStatus"] = "approved";
-          //       obj._doc["date"] = date;
-          //       obj._doc["time"] = time;
-          //     } else {
-          //       obj._doc["allStatus"] = "pending";
-          //       obj._doc["date"] = date;
-          //       obj._doc["time"] = time;
-          //     }
-          //     return obj;
-          //   } else {
-          //     return false;
-          //   }
-          //   // return obj;
-          // } else {
-          //   if (
-          //     obj.socialContract?.approved != null ||
-          //     obj.addressProof?.approved != null
-          //   ) {
-          //     if (
-          //       obj.socialContract?.approved === true &&
-          //       obj.addressProof?.approved === true
-          //     ) {
-          //       obj._doc["allStatus"] = "approved";
-          //       obj._doc["date"] = date;
-          //       obj._doc["time"] = time;
-          //     } else {
-          //       obj._doc["allStatus"] = "pending";
-          //       obj._doc["date"] = date;
-          //       obj._doc["time"] = time;
-          //     }
-          //     return obj;
-          //   } else {
-          //     return false;
-          //   }
-          //   // return obj;
-          // }
-          // if (
-          //   obj.socialContract?.approved === true &&
-          //   obj.addressProof?.approved === true
-          // ) {
-          //   obj._doc["allStatus"] = "approved";
-          //   obj._doc["date"] = date;
-          //   obj._doc["time"] = time;
-          // } else {
-          //   obj._doc["allStatus"] = "pending";
-          //   obj._doc["date"] = date;
-          //   obj._doc["time"] = time;
-          // }
-          // return obj;
         }),
       );
 
       const findContactData = _.compact(ContactData);
-      // console.log("arr", arr);
-      // console.log("findVal", findVal);
 
       res.json({
         success: true,
