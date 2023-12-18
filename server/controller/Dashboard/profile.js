@@ -1,7 +1,7 @@
 import validator from "../../validator/public";
 import express from "express";
 import utility from "../../helpers/utility";
-import Admin from "../../models/admin";
+import User from '../../models/users';
 import authentication from "../../services/authentication";
 import aws from "../../services/aws";
 import path from "path";
@@ -16,14 +16,14 @@ const router = express.Router();
 const awsUploadFile = aws.uploadFile;
 router.post(
   "/get-profile",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
-    const adminObj = req.admin;
+    const userObj = req.user;
 
-    const findAdmin = await Admin.findById({ _id: adminObj.id });
+    const findUser = await User.findById({ _id: userObj.id });
     res.json({
       success: true,
-      data: findAdmin,
+      data: findUser,
       message: null,
     });
   },
@@ -31,17 +31,20 @@ router.post(
 
 router.post(
   "/edit-profile",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
+
     const form = new multiparty.Form();
-    const adminObj = req.admin;
+
+    const userObj = req.user;
+
     form.parse(req, async (err, fields, files) => {
       const validation = await validator.EditProfileValidator(fields, files);
-      console.log("valid: ", validation);
+
       const name = fields["name"][0];
+
       const avatar = Array.isArray(files?.avatar) ? files["avatar"][0] : null;
-      console.log("field: ", fields);
-      console.log("file: ", files);
+
       if (validation.success) {
         const imageName = Date.now().toString() + ".png";
         const pathToTempFile = path.resolve("public", "temp", imageName);
@@ -51,8 +54,11 @@ router.post(
           "avatar",
           pathToTempFile,
         );
+
         console.log("upload: ", uploaded);
+
         const fileNameInTemp = `${imageName}`;
+
         console.log("fileNameInTemp ::", fileNameInTemp);
 
         if (!uploaded) {
@@ -62,15 +68,15 @@ router.post(
         if (uploaded) {
           const data = await awsUploadFile(
             fileNameInTemp,
-            `admin/${adminObj.id}/${imageName}`,
+            `user/${userObj.id}/${imageName}`,
           );
 
           console.log("data: ", data);
 
           if (data.Location) {
             utility.deleteImage(pathToTempFile).then(async () => {
-              const updateProfile = await Admin.findByIdAndUpdate(
-                adminObj.id,
+              const updateProfile = await User.findByIdAndUpdate(
+                userObj.id,
                 { name: name, profileImage: data.Location },
                 { new: true },
               );
@@ -88,8 +94,8 @@ router.post(
             });
           }
         } else {
-          const updateProfile = await Admin.findByIdAndUpdate(
-            adminObj.id,
+          const updateProfile = await User.findByIdAndUpdate(
+            userObj.id,
             { name: name },
             { new: true },
           );
@@ -107,25 +113,24 @@ router.post(
 
 router.post(
   "/filter-history",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
-    const adminObj = req.admin;
+    const userObj = req.user;
 
     const { search = "" } = req.body;
 
-    if (adminObj.permissions.document) {
+    if (userObj.permissions.document) {
       let searchObj = {};
       if (search) {
         const regExpression = new RegExp(search, "i");
         searchObj.name = regExpression;
       }
 
-      const findAdmin = await Contacts.find({
+      const findUser = await Contacts.find({
         $and: [searchObj, { contactApprove: "approved" }],
       })
         .populate("documentRequest")
         .sort({ _id: -1 });
-      // console.log("findAdmin", findAdmin);
 
       const documentType = await DocumentFile.find({});
       console.log("documentType", documentType);
@@ -133,25 +138,14 @@ router.post(
       let arr = [];
       let findVal = [];
 
-      const tempApproved = findAdmin.map(obj => {
+      const tempApproved = findUser.map(obj => {
         const date = moment(obj.updatedAt)
           .locale("pt-br")
           .format("DD MMM YYYY");
         const time = moment(obj.updatedAt).locale("pt-br").format("h:mm");
-        // if (
-        //   i.socialContract?.approved === true &&
-        //   i.addressProof?.approved === true
-        // ) {
 
         Object.keys(obj.documentRequest.requiredPermission).map(i => {
           if (i != "CNPJ" && i != "CPF") {
-            // console.log("email ::: ", obj.email);
-            // console.log(
-            //   " type ::: ",
-            //   i,
-            //   "permission ::: ",
-            //   obj.documentRequest.requiredPermission[i],
-            // );
             arr.push({
               type: i,
               permission: obj.documentRequest.requiredPermission[i],
@@ -164,8 +158,6 @@ router.post(
         findVal.push(arr);
         arr = [];
 
-        // const findData = findVal.flat(1);
-
         let lengthCount = 0;
         let lengthData = 0;
         findVal.map((val, j) => {
@@ -173,13 +165,6 @@ router.post(
             if ((obj.email || obj.phone) == i.user) {
               if (i.permission === true) {
                 lengthData += 1;
-                console.log(`iiiiiiii ::: `, i);
-
-                // console.log(`${val.user}`, obj[val.type]);
-                // console.log(`${val.user}`, val.permission);
-                // if (obj[val.type]?.approved === true) {
-                //   lengthCount += 1;
-                // }
                 if (i.approved === true) {
                   lengthCount += 1;
                 }
@@ -188,15 +173,10 @@ router.post(
           });
         });
 
-        console.log("lengthData", lengthData);
-        console.log("lengthCount", lengthCount);
-
         const findDoc = documentType.map(ele => {
           if (lengthData === lengthCount) {
-            // if (obj[ele.type]?.approvedBy != undefined) {
             if (
-              obj[ele.type]?.approvedBy == adminObj.id
-              // i.addressProof.approvedBy === adminObj.id
+              obj[ele.type]?.approvedBy == userObj.id
             ) {
               obj._doc["date"] = date;
               obj._doc["time"] = time;
@@ -205,23 +185,17 @@ router.post(
             } else {
               return false;
             }
-            // } else {
-            //   return false;
-            // }
           } else {
             return false;
           }
         });
 
         return findDoc;
-        // } else {
-        //   return false;
-        // }
       });
       const tempData = tempApproved.flat(1);
-      const approvedByAdmin = _.compact(tempData);
-      const ids = approvedByAdmin.map(o => o.id);
-      const filteredData = approvedByAdmin.filter(
+      const approvedByUser = _.compact(tempData);
+      const ids = approvedByUser.map(o => o.id);
+      const filteredData = approvedByUser.filter(
         ({ id }, index) => !ids.includes(id, index + 1),
       );
 

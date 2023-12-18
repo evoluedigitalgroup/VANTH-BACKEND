@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post(
   "/generate-document-request-link",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   validator.generateDocumentValidator,
   async (req, res) => {
     const { contactId, requestId, permission, generateLink } = req.body;
@@ -64,13 +64,13 @@ router.post("/get-document-file", async (req, res) => {
 
 router.post(
   "/filter-contacts",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
     const { search = "", filter, startFrom, totalFetchRecords } = req.body;
 
     let searchObj = {};
     let filterSearchName = {};
-    if (req.admin.permissions.contact) {
+    if (req.user.permissions.contact) {
       if (search) {
         const regExpression = new RegExp(search, "i");
 

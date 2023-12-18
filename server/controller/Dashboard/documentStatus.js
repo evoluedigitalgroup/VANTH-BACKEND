@@ -8,13 +8,13 @@ import validator from "../../validator/Dashboard";
 import moment from "moment";
 import _ from "lodash";
 import DocumentFile from "../../models/documentFile";
-import Admin from "../../models/admin";
+import User from "../../models/users";
 
 const router = express();
 
 router.post(
   "/approved-document",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   validator.documentStatusValidator,
   async (req, res) => {
     const adminObj = req.admin;
@@ -84,11 +84,11 @@ router.post(
 
 router.post(
   "/get-all-document-details",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
     const { startFrom, totalFetchRecords, search = "" } = req.body;
     console.log("req.body :: ", req.body);
-    if (req.admin.permissions.document) {
+    if (req.user.permissions.document) {
       let searchObj = {};
       if (search) {
         const regExpValue = new RegExp(search, "i");
@@ -97,12 +97,12 @@ router.post(
           name: regExpValue,
         };
       }
-      const tempAdmin = {};
-      const admin = await Admin.find({});
-      const filterAdmin = admin.map(i => {
-        return (tempAdmin[i.id] = i.name);
+      const tempUser = {};
+      const user = await User.find({});
+      const filterUser = user.map(i => {
+        return (tempUser[i.id] = i.name);
       });
-      console.log("tempAdmin::", tempAdmin);
+
       const totalContactDetails = await Contacts.find(
         { contactApprove: "approved" },
         searchObj,
@@ -173,11 +173,11 @@ router.post(
 
               ab.flat(1).map(ele => {
                 if (ele !== undefined) {
-                  let approvedAdmin = obj._doc[ele]?.approvedBy;
-                  approvedAdmin = tempAdmin[obj[ele]?.approvedBy];
+                  let approvedUser = obj._doc[ele]?.approvedBy;
+                  approvedUser = tempAdmin[obj[ele]?.approvedBy];
 
                   Object.assign(obj._doc[ele] ? obj._doc[ele] : {}, {
-                    approvedByName: approvedAdmin,
+                    approvedByName: approvedUser,
                   });
                 }
               });

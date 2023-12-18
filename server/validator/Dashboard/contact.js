@@ -2,7 +2,7 @@ import lang from "../../helpers/locale/lang";
 
 const generateDocumentValidator = async (req, res, next) => {
   const { contactId, requestId, permission } = req.body;
-  if (req.admin.permissions.contact) {
+  if (req.user.permissions.contact) {
     if (contactId && requestId && permission) {
       next();
     } else if (!contactId) {

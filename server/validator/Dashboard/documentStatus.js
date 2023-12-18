@@ -2,7 +2,7 @@ import lang from "../../helpers/locale/lang";
 
 const documentStatusValidator = (req, res, next) => {
   const { id, type, action } = req.body;
-  if (req.admin.permissions.document) {
+  if (req.user?.permissions.document) {
     if (id && type && action) {
       next();
     } else if (!id) {
