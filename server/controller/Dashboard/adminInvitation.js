@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import authentication from "../../services/authentication";
 import validator from "../../validator/Dashboard";
-import Invitation from "../../models/invitation";
+import AdminInvitation from "../../models/adminInvitation";
 import lang from "../../helpers/locale/lang";
 import utility from "../../helpers/utility";
 
@@ -12,7 +12,7 @@ const router = express.Router();
 router.post(
   "/invite-new-admin",
   authentication.AdminAuthValidateMiddleware,
-  validator.invitationValidator,
+  validator.adminInviteValidator,
   async (req, res) => {
     const { designation, permissions, code } = req.body;
 
@@ -23,7 +23,7 @@ router.post(
       code,
     };
 
-    const savedData = await new Invitation(AddData).save();
+    const savedData = await new AdminInvitation(AddData).save();
     res.json({
       success: true,
       data: savedData,
@@ -36,7 +36,7 @@ router.post("/generate-random-code", async (req, res) => {
   const generateCode = async () => {
     const code = utility.generateCharter(13);
 
-    const uniqueCode = await Invitation.find({
+    const uniqueCode = await AdminInvitation.find({
       code,
     }).countDocuments();
 
@@ -56,7 +56,7 @@ router.post("/generate-random-code", async (req, res) => {
 router.post("/get-code", async (req, res) => {
   const { code } = req.body;
   if (code) {
-    const findCode = await Invitation.findOne({ code });
+    const findCode = await AdminInvitation.findOne({ code });
     if (findCode) {
       res.json({
         success: true,

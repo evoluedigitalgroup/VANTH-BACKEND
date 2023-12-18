@@ -8,6 +8,10 @@ const Schema = mongoose.Schema;
 
 const DocumentFileSchema = new Schema(
   {
+    company: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Company",
+    },
     type: {
       type: String,
     },

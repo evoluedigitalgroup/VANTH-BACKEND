@@ -1,4 +1,4 @@
-import { invitationValidator } from "./invitation";
+import { userInviteValidator, adminInviteValidator } from "./invitation";
 import { generateDocumentValidator, approveVisitorValidator } from "./contact";
 import { documentStatusValidator } from "./documentStatus";
 import {
@@ -9,7 +9,8 @@ import {
 } from "./home";
 
 export default {
-  invitationValidator,
+  userInviteValidator,
+  adminInviteValidator,
   generateDocumentValidator,
   documentStatusValidator,
   weekValidation,

@@ -10,6 +10,10 @@ const DocRequest = mongoose.Schema(
       required: true,
       unique: true,
     },
+    company: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Company",
+    },
     contacts: {
       type: mongoose.Schema.ObjectId,
       ref: "Contact",

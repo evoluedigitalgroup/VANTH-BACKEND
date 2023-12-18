@@ -10,6 +10,10 @@ const ContactSchema = mongoose.Schema(
       required: true,
       unique: true,
     },
+    company: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Company",
+    },
     name: {
       type: String,
       required: true,

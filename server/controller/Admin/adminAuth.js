@@ -6,7 +6,7 @@ import authentication from "../../services/authentication";
 import validator from "../../validator/Admin";
 import lang from "../../helpers/locale/lang";
 import Admin from "../../models/admin";
-import Invitation from "../../models/invitation";
+import AdminInvitation from "../../models/adminInvitation";
 import _ from "lodash";
 import config from "../../config";
 
@@ -86,7 +86,7 @@ router.post("/sign-up", validator.signUpValidator, async (req, res) => {
 
   const hashed_password = await bcrypt.hash(password, password_salt);
 
-  const codeInvitation = await Invitation.findOne({ code });
+  const codeInvitation = await AdminInvitation.findOne({ code });
   if (codeInvitation) {
     const findInvite = await Admin.findOne({ invitation: codeInvitation.id });
 

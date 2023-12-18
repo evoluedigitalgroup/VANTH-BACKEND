@@ -559,15 +559,15 @@ const lang = {
     PR: "Perfil atualizado com sucesso",
   },
   YOU_TRIED_YOUR_MANY_ATTEMPTS_TO_FORGET_OTP_PLEASE_CHECK_EMAIL_FOR_FURTHER_PROCESSING:
-    {
-      EN: "You tried your many attempts to forget otp. Please check email for further processing.",
-      PR: "Você tentou suas muitas tentativas de esquecer otp. Verifique o e-mail para processamento adicional.",
-    },
+  {
+    EN: "You tried your many attempts to forget otp. Please check email for further processing.",
+    PR: "Você tentou suas muitas tentativas de esquecer otp. Verifique o e-mail para processamento adicional.",
+  },
   THIS_ACCOUNT_IS_REGISTER_USING_SOCIAL_AUTHENTICATION_PLEASE_USE_SOCIAL_AUTH_OR_YOU_CAN_ADD_PASSWORD_USING_FORGOT_PASSWORD:
-    {
-      EN: "This account is register using social authentication, please use social auth or you can add password using forgot password",
-      PR: "Esta conta está registrada usando autenticação social, use autenticação social ou você pode adicionar senha usando senha esquecida",
-    },
+  {
+    EN: "This account is register using social authentication, please use social auth or you can add password using forgot password",
+    PR: "Esta conta está registrada usando autenticação social, use autenticação social ou você pode adicionar senha usando senha esquecida",
+  },
   MOBILE_NUMBER_ALREADY_EXITS: {
     EN: "Mobile number already exits",
     PR: "O número do celular já existe",
@@ -1318,33 +1318,13 @@ const lang = {
     EN: "Phone number is already exists",
     PR: "O número de telefone já existe",
   },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
-  // PLEASE_ENTER_NAME: {
-  //   EN: "PLEASE_ENTER_NAME",
-  //   PR: "PLEASE_ENTER_NAME",
-  // },
+  WENT_WRONG_CANT_SIGNUP_COMPANY_WITH_CODE: {
+    EN: "Something went wrong, You can't signup company with code or designation",
+    PR: "Algo deu errado, você não pode registrar a empresa com código ou designação",
+  },
+  PLEASE_ENTER_CODE_AND_DESIGNATION: {
+    EN: "Please enter code and designation",
+    PR: "Insira o código e a designação",
+  }
 };
 export default lang;

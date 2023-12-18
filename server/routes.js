@@ -22,14 +22,18 @@ router.use("/contacts", contactController);
  * ADMIN ROUTES
  */
 import adminAuthController from "./controller/Admin/adminAuth";
-import invitationController from "./controller/Dashboard/invitation";
+import userAuthController from "./controller/User/userAuth";
+import userInvitationController from "./controller/Dashboard/userInvitation";
+import adminInvitationController from "./controller/Dashboard/adminInvitation";
 import profileController from "./controller/Dashboard/profile";
 import permissionController from "./controller/Dashboard/permission";
 import documentStatusController from "./controller/Dashboard/documentStatus";
 import homeController from "./controller/Dashboard/home";
 
-router.use("/auth", adminAuthController);
-router.use("/invite", invitationController);
+router.use("/admin-auth", adminAuthController);
+router.use("/auth", userAuthController);
+router.use("/invite", userInvitationController);
+router.use("/invite-admin", adminInvitationController);
 router.use("/profile", profileController);
 router.use("/permissions", permissionController);
 router.use("/document", documentStatusController);
