@@ -89,8 +89,11 @@ router.post(
   async (req, res) => {
     const { startFrom, totalFetchRecords, search = "" } = req.body;
     console.log("req.body :: ", req.body);
+    const { company } = req.user;
     if (req.user.permissions.document) {
-      let searchObj = {};
+      let searchObj = {
+        company
+      };
       if (search) {
         const regExpValue = new RegExp(search, "i");
 

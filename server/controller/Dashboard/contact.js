@@ -53,22 +53,34 @@ router.post(
   },
 );
 
-router.post("/get-document-file", async (req, res) => {
-  const documentFileList = await DocumentFile.find({});
+router.post("/get-document-file",
+  authentication.UserAuthValidateMiddleware,
+  async (req, res) => {
+    const { company } = req.user;
+    const documentFileList = await DocumentFile.find({
+      $or: [{
+        isPublic: true
+      }, {
+        company
+      }]
+    });
 
-  res.json({
-    success: true,
-    data: documentFileList,
+    res.json({
+      success: true,
+      data: documentFileList,
+    });
   });
-});
 
 router.post(
   "/filter-contacts",
   authentication.UserAuthValidateMiddleware,
   async (req, res) => {
+    console.log('req.user : ', req.user);
     const { search = "", filter, startFrom, totalFetchRecords } = req.body;
 
-    let searchObj = {};
+    let searchObj = {
+      company: req.user.company,
+    };
     let filterSearchName = {};
     if (req.user.permissions.contact) {
       if (search) {
