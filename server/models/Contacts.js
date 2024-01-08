@@ -38,6 +38,10 @@ const ContactSchema = mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "DocumentRequest",
     },
+    otherInformation: {
+      type: [Object],
+      default: []
+    },
     docs: {
       type: Object,
     },

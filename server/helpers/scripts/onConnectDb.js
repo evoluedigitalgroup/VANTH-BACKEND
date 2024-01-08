@@ -10,7 +10,7 @@ import DocumentFile from "../../models/documentFile";
 // import Configuration from "../../models/configuration";
 
 // //  SEEDING DATA
-import seedingDocumentFile from "../seedingData/documentFIle";
+import seedingDocumentFile from "../seedingData/documentFile";
 
 const seedAdminUser = () => {
   return new Promise(async (resolve, reject) => {

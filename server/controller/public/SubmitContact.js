@@ -10,7 +10,7 @@ import documentFile from "../../models/documentFile";
 router.post("/submit-contact", validator.ValidContact, async (req, res) => {
   const ConId = uuidv4();
   const Reqid = uuidv4();
-  const { name, email, phone, CPF, CNPJ } = req.body;
+  const { name, email, phone, CPF, CNPJ, otherInformation = [] } = req.body;
 
   const Obj = {
     uuid: ConId,
@@ -20,6 +20,7 @@ router.post("/submit-contact", validator.ValidContact, async (req, res) => {
     CPF,
     CNPJ,
     docs: {},
+    otherInformation
   };
 
   const DocumentFileData = await documentFile.find({});

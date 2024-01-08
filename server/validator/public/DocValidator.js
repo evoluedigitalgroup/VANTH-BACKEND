@@ -102,7 +102,7 @@ export const ValidContact = (req, res, next) => {
         message: lang.PLEASE_ENTER_VALID_CPF_NUMBER.PR,
       });
     }
-  } else if (!name && !emailOrPhone && !CPF && !CNPJ) {
+  } else if (!name && !email && !phone && !CPF && !CNPJ) {
     res.json({
       success: false,
       message: lang.ENTER_ALL_INFO.PR,
