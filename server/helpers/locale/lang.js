@@ -19,6 +19,10 @@ const lang = {
     EN: "Record Not Found",
     PR: "Registro não encontrado",
   },
+  NEW_DOCUMENT_TYPE_ADDED: {
+    EN: 'New Document Type Added',
+    PR: 'Novo tipo de documento adicionado',
+  },
   ENTER_DETAIL_PLZ: {
     EN: "Enter Details Plz",
     PR: "Insira os detalhes por favor",

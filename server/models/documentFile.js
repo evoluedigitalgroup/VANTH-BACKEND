@@ -11,6 +11,7 @@ const DocumentFileSchema = new Schema(
     company: {
       type: mongoose.Schema.ObjectId,
       ref: "Company",
+      default: null,
     },
     type: {
       type: String,
@@ -20,6 +21,10 @@ const DocumentFileSchema = new Schema(
     },
     title: {
       type: String,
+    },
+    isPublic: {
+      type: Boolean,
+      default: true,
     },
     isRequired: {
       type: Boolean,

@@ -12,6 +12,7 @@ import User from "../../models/users";
 
 const router = express();
 
+
 router.post(
   "/approved-document",
   authentication.UserAuthValidateMiddleware,
@@ -216,6 +217,29 @@ router.post(
       });
     }
   },
+);
+
+router.post('/add-new-document-type',
+  authentication.UserAuthValidateMiddleware,
+  async (req, res) => {
+    const { key, title } = req.body;
+
+    const newKeyData = {
+      company: req.user.company,
+      type: key,
+      label: key,
+      title,
+      isPublic: false
+    };
+
+    const newDocumentType = await DocumentFile.create(newKeyData);
+
+    return res.json({
+      success: true,
+      data: newDocumentType,
+      message: lang.NEW_DOCUMENT_TYPE_ADDED.PR
+    })
+  }
 );
 
 export default router;
