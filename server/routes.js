@@ -30,15 +30,25 @@ import SubmitContact from "./controller/Dashboard/SubmitContact";
 import documentStatusController from "./controller/Dashboard/documentStatus";
 import homeController from "./controller/Dashboard/home";
 
+import contractController from "./controller/Dashboard/contract";
+
 
 router.use("/admin-auth", adminAuthController);
 router.use("/auth", userAuthController);
+
 router.use("/invite", userInvitationController);
 router.use("/invite-admin", adminInvitationController);
+
 router.use("/profile", profileController);
+
 router.use("/permissions", permissionController);
+
 router.use("/document", documentStatusController);
+
+router.use("/contract", contractController);
+
 router.use("/contact", SubmitContact);
+
 router.use("/home", homeController);
 /**
  * ADVOCATE ROUTES

@@ -69,6 +69,7 @@ const lang = {
     EN: "Something went wrong",
     PR: "Algo deu errado",
   },
+
   NOT_RESULT_FOUND: {
     EN: "No result found",
     PR: "nenhum resultado encontrado",
@@ -1329,6 +1330,11 @@ const lang = {
   PLEASE_ENTER_CODE_AND_DESIGNATION: {
     EN: "Please enter code and designation",
     PR: "Insira o código e a designação",
-  }
+  },
+
+  CONTRACT_TEMPLATE_CREATED_SUCCESSFULLY: {
+    EN: "Template Created Successfully",
+    PR: "Modelo criado com sucesso",
+  },
 };
 export default lang;
