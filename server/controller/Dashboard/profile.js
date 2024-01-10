@@ -68,7 +68,7 @@ router.post(
         if (uploaded) {
           const data = await awsUploadFile(
             fileNameInTemp,
-            `user/${userObj.id}/${imageName}`,
+            `${userObj.company}/user/${userObj.id}/${imageName}`,
           );
 
           console.log("data: ", data);

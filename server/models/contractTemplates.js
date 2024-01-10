@@ -24,7 +24,7 @@ const ContractTemplateSchema = new Schema(
       required: true,
     },
     templateSchema: {
-      type: String,
+      type: [Object],
       required: true,
     },
     templatePreviewFile: {

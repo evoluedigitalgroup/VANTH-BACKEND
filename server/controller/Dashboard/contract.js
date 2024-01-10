@@ -2,7 +2,6 @@ import express from "express";
 import multiparty from "multiparty";
 import { v4 as uuidv4 } from "uuid";
 import Contacts from "../../models/Contacts";
-import validator from "../../validator/public/";
 import lang from "./../../helpers/locale/lang";
 import utility from "../../helpers/utility";
 import aws from "../../services/aws";
@@ -23,15 +22,17 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
   console.log('id : ', id);
 
   form.parse(req, async (err, fields, files) => {
+    console.log('fields : ', fields);
+    console.log('files : ', files);
     const contact = fields.user[0];
     const originalFileName = fields.originalFileName[0];
     const templateSchema = fields.schema[0] ? JSON.parse(fields.schema[0]) : null;
-    const contractPreviewFile = fields.previewFile[0];
-    const contractUsableFile = fields.usableFile[0];
+    const contractPreviewFile = files.previewFile[0];
+    const contractUsableFile = files.usableFile[0];
+    console.log('templateSchema : ', templateSchema);
 
-
-    const contractPreviewFilename = contact + '-' + '-' + Date.now() + '-' + contractPreviewFile.originalFilename;
-    const contractUsableFilename = contact + '-' + '-' + Date.now() + '-' + contractUsableFile.originalFilename;
+    const contractPreviewFilename = contact + '-' + Date.now() + '-' + contractPreviewFile.originalFilename;
+    const contractUsableFilename = contact + '-' + Date.now() + '-' + contractUsableFile.originalFilename;
 
     const previewPathToTempFile = path.resolve("public", "temp", contractPreviewFilename);
     const usablePathToTempFile = path.resolve("public", "temp", contractUsableFilename);
@@ -48,7 +49,7 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     const previewFileAwsRecord = await awsUploadFile(
       previewPathToTempFile,
-      `contract-templates/${id}/${previewPathToTempFile}`,
+      `${company}/contract-templates/${id}/${contractPreviewFilename}`,
     )
 
     if (!previewFileAwsRecord.Location) {
@@ -71,7 +72,7 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     }
     const usableFileAwsRecord = await awsUploadFile(
       usablePathToTempFile,
-      `contract-templates/${id}/${usablePathToTempFile}`,
+      `${company}/contract-templates/${id}/${contractUsableFilename}`,
     )
 
     if (!usableFileAwsRecord.Location) {
