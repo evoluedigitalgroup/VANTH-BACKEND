@@ -6,7 +6,7 @@ import authentication from "../../services/authentication";
 import validator from "../../validator/User";
 import lang from "../../helpers/locale/lang";
 import User from "../../models/users";
-import Company from "../../models/company";
+import Company from "../../models/Company";
 import UserInvitation from "../../models/userInvitation";
 import _ from "lodash";
 import config from "../../config";
