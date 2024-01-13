@@ -45,7 +45,7 @@ mongoose
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: `Tba ${config.env} Backend (version ${packageJson.version}) works fine`,
+    message: `Vanth ${config.env} Backend (version ${packageJson.version}) works fine`,
   });
 });
 
