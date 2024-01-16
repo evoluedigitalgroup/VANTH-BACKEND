@@ -17,7 +17,10 @@ import packageJson from "../package.json";
 var app = express();
 
 app.use(logger("dev"));
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE"
+}));
 app.use("temp", express.static(__dirname + "/server" + "/temp"));
 
 app.use(express.json({ limit: "50mb" }));
