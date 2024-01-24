@@ -131,7 +131,7 @@ router.get("/get-temp-auth", async (req, res) => {
     args.envelopeArgs.signerClientId = signerClientId;
     args.envelopeArgs.dsPingUrl = undefined;
 
-    const documentUrl = "https://tba-test-file-server.s3.sa-east-1.amazonaws.com/6580469e4653b1ab42dc4e10/contract-templates/6580469e4653b1ab42dc4e12/659bd12fd5d5e9e84cc722a1-1704894840612-contract.pdf";
+    const documentUrl = "https://tba-test-file-server.s3.sa-east-1.amazonaws.com/6580469e4653b1ab42dc4e10/contract-templates/6580469e4653b1ab42dc4e12/659bd12fd5d5e9e84cc722a1-1706088428825-contract.pdf";
 
     console.log('documentUrl : ', documentUrl);
 
