@@ -10,6 +10,7 @@ import path from "path";
 import DocumentFile from "../../models/documentFile";
 import authentication from "../../services/authentication";
 import ContractTemplates from "../../models/contractTemplates";
+import { pdfToPng } from "pdf-to-png-converter";
 
 import * as docusign from "../../services/docusign";
 
@@ -17,7 +18,7 @@ const awsUploadFile = aws.uploadFile;
 
 const router = express();
 
-router.post("/create-contract", authentication.UserAuthValidateMiddleware, async (req, res) => {
+router.post("/create-template", authentication.UserAuthValidateMiddleware, async (req, res) => {
   const form = new multiparty.Form();
 
   const { id, company } = req.user;
@@ -32,14 +33,19 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     const templateSchema = fields.schema[0] ? JSON.parse(fields.schema[0]) : null;
     const contractPreviewFile = files.previewFile[0];
     const contractUsableFile = files.usableFile[0];
+    const contractOriginalFile = files.originalFile[0];
     console.log('templateSchema : ', templateSchema);
 
-    const contractPreviewFilename = contact + '-' + Date.now() + '-' + contractPreviewFile.originalFilename;
-    const contractUsableFilename = contact + '-' + Date.now() + '-' + contractUsableFile.originalFilename;
+    const contractPreviewFilename = uuidv4() + '-' + Date.now() + '-' + contractPreviewFile.originalFilename;
+    const contractUsableFilename = uuidv4() + '-' + Date.now() + '-' + contractUsableFile.originalFilename;
+    const contractOriginalFilename = uuidv4() + '-' + Date.now() + '-' + contractOriginalFile.originalFilename;
 
     const previewPathToTempFile = path.resolve("public", "temp", contractPreviewFilename);
     const usablePathToTempFile = path.resolve("public", "temp", contractUsableFilename);
+    const originalPathToTempFile = path.resolve("public", "temp", contractOriginalFilename);
+    const originalPathToTempFileImg = path.resolve("public", "temp", contractOriginalFilename + '.png');
 
+    //  Upload preview file to temp folder
     const uploadPreviewFile = await utility.uploadFile(files, "previewFile", previewPathToTempFile)
 
     if (!uploadPreviewFile) {
@@ -50,6 +56,39 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       });
     }
 
+    console.log('uploadPreviewFile : ', uploadPreviewFile);
+
+    const pngPages = await pdfToPng(previewPathToTempFile, // The function accepts PDF file path or a Buffer
+      {
+        outputFolder: path.resolve("public", "temp"), // Folder to write output PNG files. If not specified, PNG output will be available only as a Buffer content, without saving to a file.
+        outputFileMask: contractOriginalFilename + '.png', // Output filename mask. Default value is 'buffer'.
+        pagesToProcess: [1],   // Subset of pages to convert (first page = 1), other pages will be skipped if specified.
+      }
+    );
+
+    console.log('pngPages : ', pngPages);
+
+    if (pngPages.length === 0) {
+      res.json({
+        success: true,
+        data: null,
+        message: lang.SOMETHING_WENT_WRONG.PR,
+      });
+    }
+
+    const imgPath = pngPages[0].path;
+    const imgName = pngPages[0].name;
+
+    //  Upload preview image file to aws folder
+    const previewImageFileAwsRecord = await awsUploadFile(
+      imgPath,
+      `${company}/contract-templates/${id}/${imgName}`,
+    )
+
+    //  Delete the uploaded preview image file
+    await utility.deleteImage(imgPath);
+
+    //  Upload preview file to aws folder
     const previewFileAwsRecord = await awsUploadFile(
       previewPathToTempFile,
       `${company}/contract-templates/${id}/${contractPreviewFilename}`,
@@ -62,8 +101,11 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
         message: lang.SOMETHING_WENT_WRONG.PR,
       });
     }
+
+    //  Delete the uploaded preview file
     await utility.deleteImage(previewPathToTempFile);
 
+    //  Upload usable file to temp folder
     const uploadUsableFile = await utility.uploadFile(files, "usableFile", usablePathToTempFile)
 
     if (!uploadUsableFile) {
@@ -73,6 +115,8 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
         message: lang.SOMETHING_WENT_WRONG.PR,
       });
     }
+
+    //  Upload usable file to aws folder
     const usableFileAwsRecord = await awsUploadFile(
       usablePathToTempFile,
       `${company}/contract-templates/${id}/${contractUsableFilename}`,
@@ -86,7 +130,38 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       });
     }
 
+    //  Delete the uploaded usable file
     await utility.deleteImage(usablePathToTempFile);
+
+
+    //  Upload usable file to temp folder
+    const uploadOriginalFile = await utility.uploadFile(files, "originalFile", originalPathToTempFile)
+
+    if (!uploadOriginalFile) {
+      res.json({
+        success: true,
+        data: null,
+        message: lang.SOMETHING_WENT_WRONG.PR,
+      });
+    }
+
+    //  Upload usable file to aws folder
+    const originalFileAwsRecord = await awsUploadFile(
+      originalPathToTempFile,
+      `${company}/contract-templates/${id}/${contractOriginalFilename}`,
+    )
+
+    if (!originalFileAwsRecord.Location) {
+      res.json({
+        success: true,
+        data: null,
+        message: lang.SOMETHING_WENT_WRONG.PR,
+      });
+    }
+
+    //  Delete the uploaded usable file
+    await utility.deleteImage(originalPathToTempFile);
+
 
     const createTemplate = await ContractTemplates.create({
       uuid: uuidv4(),
@@ -94,7 +169,9 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       user: id,
       originalFileName,
       templateSchema,
+      originalFile: originalFileAwsRecord.Location,
       templatePreviewFile: previewFileAwsRecord.Location,
+      templatePreviewImageFile: previewImageFileAwsRecord.Location,
       templateFile: usableFileAwsRecord.Location,
     });
 
@@ -113,6 +190,34 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     });
   });
 });
+
+router.post("/get-templates", authentication.UserAuthValidateMiddleware, async (req, res) => {
+  const { id, company } = req.user;
+
+  const getTemplates = await ContractTemplates.find({
+    company,
+    user: id,
+    isDeleted: false
+  });
+
+  if (!getTemplates) {
+    res.json({
+      success: true,
+      data: [],
+      message: null,
+    });
+  }
+
+  res.json({
+    success: true,
+    data: getTemplates,
+    message: null,
+  });
+});
+
+
+
+//   TEMPORARY ROUTE FOR TESTING
 
 router.get("/get-temp-auth", async (req, res) => {
   //  Step 1: Authenticate the user

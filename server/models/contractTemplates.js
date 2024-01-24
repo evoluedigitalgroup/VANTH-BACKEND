@@ -31,7 +31,15 @@ const ContractTemplateSchema = new Schema(
       type: String,
       required: true
     },
+    templatePreviewImageFile: {
+      type: String,
+      required: true
+    },
     templateFile: {
+      type: String,
+      required: true
+    },
+    originalFile: {
       type: String,
       required: true
     },
