@@ -1,4 +1,5 @@
 import express from "express";
+import axios from "axios";
 import multiparty from "multiparty";
 import { v4 as uuidv4 } from "uuid";
 import Contacts from "../../models/Contacts";
@@ -9,6 +10,8 @@ import path from "path";
 import DocumentFile from "../../models/documentFile";
 import authentication from "../../services/authentication";
 import ContractTemplates from "../../models/contractTemplates";
+
+import * as docusign from "../../services/docusign";
 
 const awsUploadFile = aws.uploadFile;
 
@@ -108,6 +111,81 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       data: createTemplate,
       message: lang.CONTRACT_TEMPLATE_CREATED_SUCCESSFULLY.PR,
     });
+  });
+});
+
+router.get("/get-temp-auth", async (req, res) => {
+  //  Step 1: Authenticate the user
+  docusign.getDocuSignJwtToken().then(async (token) => {
+
+    const signerEmail = 'clathiya007@gmail.com';
+    const signerName = 'Chirag Lathiya';
+    const signerClientId = '1001';
+
+    const args = {};
+    args.accessToken = token;
+    args.envelopeArgs = {};
+    args.envelopeArgs.dsReturnUrl = `http://localhost:3017/api/v1/contract/docusign/return-url`;
+    args.envelopeArgs.signerEmail = signerEmail;
+    args.envelopeArgs.signerName = signerName;
+    args.envelopeArgs.signerClientId = signerClientId;
+    args.envelopeArgs.dsPingUrl = undefined;
+
+    const documentUrl = "https://tba-test-file-server.s3.sa-east-1.amazonaws.com/6580469e4653b1ab42dc4e10/contract-templates/6580469e4653b1ab42dc4e12/659bd12fd5d5e9e84cc722a1-1704894840612-contract.pdf";
+
+    console.log('documentUrl : ', documentUrl);
+
+    //  Step 2: convert template file into base64;
+    const base64Data = await axios.get(documentUrl, {
+      responseType: "arraybuffer",
+      responseEncoding: "binary",
+      headers: {
+        "Content-Type": "application/pdf"
+      }
+    });
+
+    console.log('base64Data : ', base64Data.data.toString('base64'));
+
+    args.envelopeArgs.documentBase64 = base64Data.data.toString('base64');
+
+    //  Step 3: Create Envelope
+    docusign.createEnvelope(args).then((resultsData) => {
+      console.log('resultsData : ', resultsData);
+
+      args.envelopeId = resultsData.envelopeId;
+
+      //  Step 4: Create the recipient view definition
+      const view = docusign.makeRecipientViewRequest(args.envelopeArgs);
+      args.viewRequest = view;
+
+
+      //  Step 5: Initiate embedded signing
+      docusign.initiateEmbeddedSigning(args).then((resultValue) => {
+        console.log('resultValue : ', resultValue);
+        res.json({
+          success: true,
+          data: resultValue,
+          message: null
+        });
+      }).catch((err) => {
+        console.log('err : ', err);
+      });
+
+
+    }).catch((err) => {
+      console.log('err : ', err);
+    });
+
+
+  });
+});
+
+router.get("/docusign/return-url", async (req, res) => {
+  console.log('/docusign/return-url req.body : ', req.body);
+  res.json({
+    success: true,
+    data: null,
+    message: null
   });
 });
 
