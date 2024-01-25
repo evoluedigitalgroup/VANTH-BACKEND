@@ -214,7 +214,11 @@ router.post("/get-templates", authentication.UserAuthValidateMiddleware, async (
   });
 });
 
+router.post("/create-contract", authentication.UserAuthValidateMiddleware, async (req, res) => {
+  const { id, company } = req.user;
+  const { documentsId, selectedContact } = req.body;
 
+});
 
 //   TEMPORARY ROUTE FOR TESTING
 

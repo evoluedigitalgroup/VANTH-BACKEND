@@ -18,7 +18,7 @@ router.post(
   authentication.UserAuthValidateMiddleware,
   validator.documentStatusValidator,
   async (req, res) => {
-    const adminObj = req.admin;
+    const userObj = req.user;
     const { id, type, action } = req.body;
 
     const data = await Contacts.findById({ _id: id });
@@ -33,7 +33,7 @@ router.post(
         const response = {
           url: data.docs[validType.type].url,
           approved: true,
-          approvedBy: adminObj.id,
+          approvedBy: userObj.id,
           approvedDate: new Date(),
         };
         console.log("response", response);
@@ -143,7 +143,7 @@ router.post(
                 arr.push({
                   type: i,
                   permission: obj.documentRequest.requiredPermission[i],
-                  approved: obj[i]?.approved || false,
+                  approved: obj.docs[i]?.approved || false,
                   user: obj.email || obj.phone,
                 });
               }
@@ -234,6 +234,17 @@ router.post('/add-new-document-type',
       title,
       isPublic: false
     };
+
+    // Check if same key exist
+    const keyExist = await DocumentFile.findOne({ type: key, company: req.user.company });
+
+    if (keyExist) {
+      return res.json({
+        success: false,
+        data: null,
+        message: lang.DOCUMENT_TYPE_ALREADY_EXIST.PR
+      });
+    }
 
     const newDocumentType = await DocumentFile.create(newKeyData);
 

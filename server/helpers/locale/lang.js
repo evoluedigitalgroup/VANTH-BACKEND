@@ -23,6 +23,10 @@ const lang = {
     EN: 'New Document Type Added',
     PR: 'Novo tipo de documento adicionado',
   },
+  DOCUMENT_TYPE_ALREADY_EXIST: {
+    EN: 'This Document Type is already exist',
+    PR: 'Este tipo de documento já existe',
+  },
   ENTER_DETAIL_PLZ: {
     EN: "Enter Details Plz",
     PR: "Insira os detalhes por favor",
