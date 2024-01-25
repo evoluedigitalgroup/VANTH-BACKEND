@@ -10,7 +10,8 @@ import path from "path";
 import DocumentFile from "../../models/documentFile";
 import authentication from "../../services/authentication";
 import ContractTemplates from "../../models/contractTemplates";
-import { pdfToPng } from "pdf-to-png-converter";
+import fs from 'fs';
+import * as pdf2img from 'pdf-img-convert';
 
 import * as docusign from "../../services/docusign";
 
@@ -58,17 +59,9 @@ router.post("/create-template", authentication.UserAuthValidateMiddleware, async
 
     console.log('uploadPreviewFile : ', uploadPreviewFile);
 
-    const pngPages = await pdfToPng(previewPathToTempFile, // The function accepts PDF file path or a Buffer
-      {
-        outputFolder: path.resolve("public", "temp"), // Folder to write output PNG files. If not specified, PNG output will be available only as a Buffer content, without saving to a file.
-        outputFileMask: contractOriginalFilename + '.png', // Output filename mask. Default value is 'buffer'.
-        pagesToProcess: [1],   // Subset of pages to convert (first page = 1), other pages will be skipped if specified.
-      }
-    );
+    var outputImages = await pdf2img.convert(previewPathToTempFile);
 
-    console.log('pngPages : ', pngPages);
-
-    if (pngPages.length === 0) {
+    if (outputImages.length === 0) {
       res.json({
         success: true,
         data: null,
@@ -76,8 +69,14 @@ router.post("/create-template", authentication.UserAuthValidateMiddleware, async
       });
     }
 
-    const imgPath = pngPages[0].path;
-    const imgName = pngPages[0].name;
+    fs.writeFileSync(originalPathToTempFileImg, outputImages[0]);
+
+
+    const filePathValue = originalPathToTempFileImg;
+
+    const imgPath = filePathValue;
+    const imgName = filePathValue.split('/').pop();
+
 
     //  Upload preview image file to aws folder
     const previewImageFileAwsRecord = await awsUploadFile(
