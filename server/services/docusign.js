@@ -210,17 +210,11 @@ export const createEnvelopes = async (args) => {
     // Step 1. Make the envelope request body
     let envelope = makeEnvelopes(args.envelopeArgs);
 
-    console.log('envelope : ', envelope);
-
     // Step 2. call Envelopes::create API method
     // Exceptions will be caught by the calling function
     results = await envelopesApi.createEnvelope(accountId, {
         envelopeDefinition: envelope,
     });
-
-    results.fullUrl = docuSignBasePath + results.uri;
-
-    console.log('results : ', results);
 
     return results;
 }
@@ -242,7 +236,7 @@ export const makeRecipientViewRequest = (args) => {
     // the DocuSign signing. It's usually better to use
     // the session mechanism of your web framework. Query parameters
     // can be changed/spoofed very easily.
-    viewRequest.returnUrl = args.dsReturnUrl + '?state=123';
+    viewRequest.returnUrl = args.dsReturnUrl;
 
     // How has your app authenticated the user? In addition to your app's
     // authentication, you can include authenticate steps from DocuSign.

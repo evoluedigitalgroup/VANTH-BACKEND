@@ -220,15 +220,8 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
   try {
     const { id, company } = req.user;
     const { selectedTemplates, selectedContact } = req.body;
-    //  Logged In User
-    console.log('Logged In User : ', id);
-    //  Logged In Company
-    console.log('Logged In Company : ', company);
 
-    //  Selected Templates For Contracts
-    console.log('Selected Templates For Contracts : ', selectedTemplates);
     const contactDetails = await Contacts.findById(selectedContact);
-    console.log('contactDetails : ', contactDetails);
 
     const templates = await ContractTemplates.find({
       _id: {
@@ -237,18 +230,18 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       company,
     });
 
-    // const insertedData = {
-    //   uuid: uuidv4(),
-    //   identifier: uuidv4(),
-    //   company,
-    //   user: id,
-    //   recipient: selectedContact,
-    //   contractTemplates: selectedTemplates,
-    // };
+    const insertedData = {
+      uuid: uuidv4(),
+      identifier: uuidv4(),
+      company,
+      user: id,
+      recipient: selectedContact,
+      contractTemplates: selectedTemplates,
+    };
 
-    // const createdContractRequest = await Contracts
+    const contractRequest = await Contracts.create(insertedData);
 
-    console.log('templates : ', templates);
+    console.log('contractRequest : ', contractRequest)
 
     let templateBase64Data = [];
     for (let i = 0; i < templates.length; i++) {
@@ -275,11 +268,11 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     const args = {};
     args.accessToken = token;
-    args.dsReturnUrl = `${returnUrl}?general=${uuidv4()}`;
+    args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}`;
     args.signerEmail = signerEmail;
     args.signerName = signerName;
     args.signerClientId = signerClientId;
-    args.dsPingUrl = `${pingUrl}?general=${uuidv4()}`;
+    args.dsPingUrl = null;
 
     args.envelopeArgs = [];
 
@@ -291,20 +284,14 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       envelopeArgs.documentDbId = obj.id;
       envelopeArgs.documentId = Math.floor(100000000 + Math.random() * 900000000);
 
-      envelopeArgs.dsReturnUrl = `${returnUrl}?template=${obj.uuid}`;
+      envelopeArgs.dsReturnUrl = args.dsReturnUrl;
       envelopeArgs.signerEmail = signerEmail;
       envelopeArgs.signerName = signerName;
       envelopeArgs.recipientId = Math.floor(100000000 + Math.random() * 900000000);
       envelopeArgs.documentName = obj.name;
       envelopeArgs.signerClientId = signerClientId;
-      envelopeArgs.dsPingUrl = `${pingUrl}?template=${obj.uuid}`;
+      envelopeArgs.dsPingUrl = args.dsPingUrl;
       envelopeArgs.documentBase64 = obj.documentBase64;
-
-      console.log('envelopeArgs : ', {
-        ...envelopeArgs,
-        documentBase64: null
-      })
-
       args.envelopeArgs.push(envelopeArgs);
     }
 
@@ -312,23 +299,21 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     console.log('resultsData : ', resultsData);
 
-    args.envelopeId = resultsData.envelopeId;
-    const view = docusign.makeRecipientViewRequest(args);
-    console.log('view : ', view);
-    const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view)
-    console.log('results : ', results);
+    // args.envelopeId = resultsData.envelopeId;
+    // const view = docusign.makeRecipientViewRequest(args);
+    // console.log('view : ', view);
+    // const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view)
+    // console.log('results : ', results);
 
-    // for (let i = 0; i < args.envelopeArgs.length; i++) {
-    //   const envelop = args.envelopeArgs[i];
-
-
-
-    // }
+    contractRequest.docusignEnvelopeId = resultsData.envelopeId;
+    await contractRequest.save();
 
 
-
-    //  Selected Contact For Contracts
-    console.log('Selected Contact For Contracts : ', selectedContact);
+    res.json({
+      success: true,
+      data: contractRequest,
+      message: 'Contract request generated successfully',
+    });
 
   } catch (error) {
 
