@@ -14,6 +14,8 @@ import fs from 'fs';
 import * as pdf2img from 'pdf-img-convert';
 
 import * as docusign from "../../services/docusign";
+import { generateUrlPdfToBase64 } from "../../helpers/docusign";
+import Contracts from "../../models/Contracts";
 
 const awsUploadFile = aws.uploadFile;
 
@@ -215,81 +217,211 @@ router.post("/get-templates", authentication.UserAuthValidateMiddleware, async (
 });
 
 router.post("/create-contract", authentication.UserAuthValidateMiddleware, async (req, res) => {
-  const { id, company } = req.user;
-  const { documentsId, selectedContact } = req.body;
+  try {
+    const { id, company } = req.user;
+    const { selectedTemplates, selectedContact } = req.body;
+    //  Logged In User
+    console.log('Logged In User : ', id);
+    //  Logged In Company
+    console.log('Logged In Company : ', company);
 
+    //  Selected Templates For Contracts
+    console.log('Selected Templates For Contracts : ', selectedTemplates);
+    const contactDetails = await Contacts.findById(selectedContact);
+    console.log('contactDetails : ', contactDetails);
+
+    const templates = await ContractTemplates.find({
+      _id: {
+        $in: selectedTemplates
+      },
+      company,
+    });
+
+    // const insertedData = {
+    //   uuid: uuidv4(),
+    //   identifier: uuidv4(),
+    //   company,
+    //   user: id,
+    //   recipient: selectedContact,
+    //   contractTemplates: selectedTemplates,
+    // };
+
+    // const createdContractRequest = await Contracts
+
+    console.log('templates : ', templates);
+
+    let templateBase64Data = [];
+    for (let i = 0; i < templates.length; i++) {
+      const obj = templates[i];
+      const base64Data = await generateUrlPdfToBase64(obj.templateFile);
+      templateBase64Data.push({
+        documentBase64: base64Data,
+        name: obj.originalFileName,
+        uuid: obj.uuid,
+        id: obj.id
+      });
+    }
+
+    const token = await docusign.getDocuSignJwtToken()
+
+    console.log('token : ', token)
+
+    const signerEmail = contactDetails.email;
+    const signerName = contactDetails.name;
+    const signerClientId = contactDetails.uuid;
+    const returnUrl = `http://localhost:3017/api/v1/contract/docusign/return-url`;
+    const pingUrl = `http://localhost:3017/api/v1/contract/docusign/ping-url`;
+
+
+    const args = {};
+    args.accessToken = token;
+    args.dsReturnUrl = `${returnUrl}?general=${uuidv4()}`;
+    args.signerEmail = signerEmail;
+    args.signerName = signerName;
+    args.signerClientId = signerClientId;
+    args.dsPingUrl = `${pingUrl}?general=${uuidv4()}`;
+
+    args.envelopeArgs = [];
+
+    for (let i = 0; i < templateBase64Data.length; i++) {
+      const obj = templateBase64Data[i];
+
+      const envelopeArgs = {};
+
+      envelopeArgs.documentDbId = obj.id;
+      envelopeArgs.documentId = Math.floor(100000000 + Math.random() * 900000000);
+
+      envelopeArgs.dsReturnUrl = `${returnUrl}?template=${obj.uuid}`;
+      envelopeArgs.signerEmail = signerEmail;
+      envelopeArgs.signerName = signerName;
+      envelopeArgs.recipientId = Math.floor(100000000 + Math.random() * 900000000);
+      envelopeArgs.documentName = obj.name;
+      envelopeArgs.signerClientId = signerClientId;
+      envelopeArgs.dsPingUrl = `${pingUrl}?template=${obj.uuid}`;
+      envelopeArgs.documentBase64 = obj.documentBase64;
+
+      console.log('envelopeArgs : ', {
+        ...envelopeArgs,
+        documentBase64: null
+      })
+
+      args.envelopeArgs.push(envelopeArgs);
+    }
+
+    const resultsData = await docusign.createEnvelopes(args);
+
+    console.log('resultsData : ', resultsData);
+
+    args.envelopeId = resultsData.envelopeId;
+    const view = docusign.makeRecipientViewRequest(args);
+    console.log('view : ', view);
+    const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view)
+    console.log('results : ', results);
+
+    // for (let i = 0; i < args.envelopeArgs.length; i++) {
+    //   const envelop = args.envelopeArgs[i];
+
+
+
+    // }
+
+
+
+    //  Selected Contact For Contracts
+    console.log('Selected Contact For Contracts : ', selectedContact);
+
+  } catch (error) {
+
+    console.log('error : ', error)
+
+    res.json({
+      success: false,
+      data: null,
+      message: 'Something went wrong'
+    });
+  }
 });
 
 //   TEMPORARY ROUTE FOR TESTING
 
-router.get("/get-temp-auth", async (req, res) => {
-  //  Step 1: Authenticate the user
-  docusign.getDocuSignJwtToken().then(async (token) => {
+// router.get("/get-temp-auth", async (req, res) => {
+//   //  Step 1: Authenticate the user
+//   docusign.getDocuSignJwtToken().then(async (token) => {
 
-    const signerEmail = 'clathiya007@gmail.com';
-    const signerName = 'Chirag Lathiya';
-    const signerClientId = '1001';
+//     const signerEmail = 'clathiya007@gmail.com';
+//     const signerName = 'Chirag Lathiya';
+//     const signerClientId = '1001';
 
-    const args = {};
-    args.accessToken = token;
-    args.envelopeArgs = {};
-    args.envelopeArgs.dsReturnUrl = `http://localhost:3017/api/v1/contract/docusign/return-url`;
-    args.envelopeArgs.signerEmail = signerEmail;
-    args.envelopeArgs.signerName = signerName;
-    args.envelopeArgs.signerClientId = signerClientId;
-    args.envelopeArgs.dsPingUrl = undefined;
+//     const args = {};
+//     args.accessToken = token;
+//     args.envelopeArgs = {};
+//     args.envelopeArgs.dsReturnUrl = `http://localhost:3017/api/v1/contract/docusign/return-url`;
+//     args.envelopeArgs.signerEmail = signerEmail;
+//     args.envelopeArgs.signerName = signerName;
+//     args.envelopeArgs.signerClientId = signerClientId;
+//     args.envelopeArgs.dsPingUrl = undefined;
 
-    const documentUrl = "https://tba-test-file-server.s3.sa-east-1.amazonaws.com/6580469e4653b1ab42dc4e10/contract-templates/6580469e4653b1ab42dc4e12/659bd12fd5d5e9e84cc722a1-1706088428825-contract.pdf";
+//     const documentUrl = "https://tba-test-file-server.s3.sa-east-1.amazonaws.com/6580469e4653b1ab42dc4e10/contract-templates/6580469e4653b1ab42dc4e12/659bd12fd5d5e9e84cc722a1-1706088428825-contract.pdf";
 
-    console.log('documentUrl : ', documentUrl);
+//     console.log('documentUrl : ', documentUrl);
 
-    //  Step 2: convert template file into base64;
-    const base64Data = await axios.get(documentUrl, {
-      responseType: "arraybuffer",
-      responseEncoding: "binary",
-      headers: {
-        "Content-Type": "application/pdf"
-      }
-    });
+//     //  Step 2: convert template file into base64;
+//     const base64Data = await axios.get(documentUrl, {
+//       responseType: "arraybuffer",
+//       responseEncoding: "binary",
+//       headers: {
+//         "Content-Type": "application/pdf"
+//       }
+//     });
 
-    console.log('base64Data : ', base64Data.data.toString('base64'));
+//     console.log('base64Data : ', base64Data.data.toString('base64'));
 
-    args.envelopeArgs.documentBase64 = base64Data.data.toString('base64');
+//     args.envelopeArgs.documentBase64 = base64Data.data.toString('base64');
 
-    //  Step 3: Create Envelope
-    docusign.createEnvelope(args).then((resultsData) => {
-      console.log('resultsData : ', resultsData);
+//     //  Step 3: Create Envelope
+//     docusign.createEnvelope(args).then((resultsData) => {
+//       console.log('resultsData : ', resultsData);
 
-      args.envelopeId = resultsData.envelopeId;
+//       args.envelopeId = resultsData.envelopeId;
 
-      //  Step 4: Create the recipient view definition
-      const view = docusign.makeRecipientViewRequest(args.envelopeArgs);
-      args.viewRequest = view;
-
-
-      //  Step 5: Initiate embedded signing
-      docusign.initiateEmbeddedSigning(args).then((resultValue) => {
-        console.log('resultValue : ', resultValue);
-        res.json({
-          success: true,
-          data: resultValue,
-          message: null
-        });
-      }).catch((err) => {
-        console.log('err : ', err);
-      });
+//       //  Step 4: Create the recipient view definition
+//       const view = docusign.makeRecipientViewRequest(args.envelopeArgs);
+//       args.viewRequest = view;
 
 
-    }).catch((err) => {
-      console.log('err : ', err);
-    });
+//       //  Step 5: Initiate embedded signing
+//       docusign.initiateEmbeddedSigning(args).then((resultValue) => {
+//         console.log('resultValue : ', resultValue);
+//         res.json({
+//           success: true,
+//           data: resultValue,
+//           message: null
+//         });
+//       }).catch((err) => {
+//         console.log('err : ', err);
+//       });
 
 
-  });
-});
+//     }).catch((err) => {
+//       console.log('err : ', err);
+//     });
+
+
+//   });
+// });
 
 router.get("/docusign/return-url", async (req, res) => {
   console.log('/docusign/return-url req.body : ', req.body);
+  res.json({
+    success: true,
+    data: null,
+    message: null
+  });
+});
+
+
+router.get("/docusign/ping-url", async (req, res) => {
+  console.log('/docusign/ping-url req.body : ', req.body);
   res.json({
     success: true,
     data: null,

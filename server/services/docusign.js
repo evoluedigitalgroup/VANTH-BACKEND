@@ -95,6 +95,88 @@ export const makeEnvelope = (args) => {
     return env;
 }
 
+export const makeEnvelopes = (envelopeArgs) => {
+    // Data for this method
+    // args.signerEmail
+    // args.signerName
+    // args.signerClientId
+    // docFile
+
+    // document 1 (pdf) has tag /sn1/
+    //
+    // The envelope has one recipients.
+    // recipient 1 - signer
+
+
+    let envelopes = [];
+
+    for (let i = 0; i < envelopeArgs.length; i++) {
+        const envelop = envelopeArgs[i];
+
+
+        const documentId = envelop.documentId;
+        console.log('documentId : ', documentId);
+
+
+
+        // add the documents
+        let doc = new docusign.Document();
+        doc.documentBase64 = envelop.documentBase64;
+        doc.name = envelop.documentBase64; // can be different from actual file name
+        doc.fileExtension = 'pdf';
+        doc.documentId = documentId;
+
+
+        // The order in the docs array determines the order in the envelope
+
+        envelopes = [...envelopes, doc];
+    }
+
+    // create the envelope definition
+    let env = new docusign.EnvelopeDefinition();
+    env.emailSubject = 'Please sign this document';
+
+    env.documents = envelopes;
+
+    // Create a signer recipient to sign the document, identified by name and email
+    // We set the clientUserId to enable embedded signing for the recipient
+    // We're setting the parameters via the object creation
+    let signer1 = docusign.Signer.constructFromObject({
+        email: envelopeArgs[0].signerEmail,
+        name: envelopeArgs[0].signerName,
+        clientUserId: envelopeArgs[0].signerClientId,
+        recipientId: envelopeArgs[0].recipientId
+    });
+
+    // Create signHere fields (also known as tabs) on the documents,
+    // We're using anchor (autoPlace) positioning
+    //
+    // The DocuSign platform seaches throughout your envelope's
+    // documents for matching anchor strings.
+    let signHere1 = docusign.SignHere.constructFromObject({
+        anchorString: '###SIGN_HERE###',
+        anchorYOffset: '10',
+        anchorUnits: 'pixels',
+        anchorXOffset: '20',
+    });
+    // Tabs are set per recipient / signer
+    let signer1Tabs = docusign.Tabs.constructFromObject({
+        signHereTabs: [signHere1],
+    });
+    signer1.tabs = signer1Tabs;
+
+    // Add the recipient to the envelope object
+    let recipients = docusign.Recipients.constructFromObject({
+        signers: [signer1],
+    });
+    env.recipients = recipients;
+
+    // Request that the envelope be sent by setting |status| to "sent".
+    // To request that the envelope be created as a draft, set to "created"
+    env.status = 'sent';
+    return env;
+}
+
 export const createEnvelope = async (args) => {
     let dsApiClient = new docusign.ApiClient();
     dsApiClient.setBasePath(basePath);
@@ -104,6 +186,31 @@ export const createEnvelope = async (args) => {
 
     // Step 1. Make the envelope request body
     let envelope = makeEnvelope(args.envelopeArgs);
+
+    // Step 2. call Envelopes::create API method
+    // Exceptions will be caught by the calling function
+    results = await envelopesApi.createEnvelope(accountId, {
+        envelopeDefinition: envelope,
+    });
+
+    results.fullUrl = docuSignBasePath + results.uri;
+
+    console.log('results : ', results);
+
+    return results;
+}
+
+export const createEnvelopes = async (args) => {
+    let dsApiClient = new docusign.ApiClient();
+    dsApiClient.setBasePath(basePath);
+    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
+    let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+    let results = null;
+
+    // Step 1. Make the envelope request body
+    let envelope = makeEnvelopes(args.envelopeArgs);
+
+    console.log('envelope : ', envelope);
 
     // Step 2. call Envelopes::create API method
     // Exceptions will be caught by the calling function
@@ -159,6 +266,27 @@ export const makeRecipientViewRequest = (args) => {
     viewRequest.pingUrl = args.dsPingUrl; // optional setting
 
     return viewRequest;
+}
+
+export const generateEnvelopApi = (accessToken) => {
+    let dsApiClient = new docusign.ApiClient();
+    dsApiClient.setBasePath(basePath);
+    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + accessToken);
+    return new docusign.EnvelopesApi(dsApiClient);
+}
+
+export const generateRecipientViewRequest = async (token, envelopeId, viewRequest) => {
+
+    let dsApiClient = new docusign.ApiClient();
+    dsApiClient.setBasePath(basePath);
+    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + token);
+    let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+
+    const results = await envelopesApi.createRecipientView(accountId, envelopeId, {
+        recipientViewRequest: viewRequest,
+    });
+
+    return results;
 }
 
 export const initiateEmbeddedSigning = async (args) => {
