@@ -16,6 +16,7 @@ import * as pdf2img from 'pdf-img-convert';
 import * as docusign from "../../services/docusign";
 import { generateUrlPdfToBase64 } from "../../helpers/docusign";
 import Contracts from "../../models/Contracts";
+import Company from "../../models/Company";
 
 const awsUploadFile = aws.uploadFile;
 
@@ -262,13 +263,9 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     const signerEmail = contactDetails.email;
     const signerName = contactDetails.name;
     const signerClientId = contactDetails.uuid;
-    const returnUrl = `http://localhost:3017/api/v1/contract/docusign/return-url`;
-    const pingUrl = `http://localhost:3017/api/v1/contract/docusign/ping-url`;
-
 
     const args = {};
     args.accessToken = token;
-    args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}`;
     args.signerEmail = signerEmail;
     args.signerName = signerName;
     args.signerClientId = signerClientId;
@@ -280,18 +277,13 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       const obj = templateBase64Data[i];
 
       const envelopeArgs = {};
-
-      envelopeArgs.documentDbId = obj.id;
       envelopeArgs.documentId = Math.floor(100000000 + Math.random() * 900000000);
-
-      envelopeArgs.dsReturnUrl = args.dsReturnUrl;
       envelopeArgs.signerEmail = signerEmail;
       envelopeArgs.signerName = signerName;
       envelopeArgs.recipientId = Math.floor(100000000 + Math.random() * 900000000);
-      envelopeArgs.documentName = obj.name;
-      envelopeArgs.signerClientId = signerClientId;
-      envelopeArgs.dsPingUrl = args.dsPingUrl;
-      envelopeArgs.documentBase64 = obj.documentBase64;
+      envelopeArgs.documentName = obj.name; //
+      envelopeArgs.signerClientId = signerClientId; //
+      envelopeArgs.documentBase64 = obj.documentBase64; //
       args.envelopeArgs.push(envelopeArgs);
     }
 
@@ -325,6 +317,105 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       message: 'Something went wrong'
     });
   }
+});
+
+router.post("/get-contract-details", async (req, res) => {
+  console.log('req.body : ', req.body);
+
+  const { companyId, contractId, docusignEnvelopeId } = req.body;
+
+  const contractRequest = await Contracts.findOne({
+    company: companyId,
+    uuid: contractId,
+    docusignEnvelopeId
+  }).populate("company").populate("recipient");
+
+  console.log('contractRequest : ', contractRequest);
+
+  if (contractRequest.status === 'signed' || contractRequest.status === 'rejected') {
+    res.json({
+      success: true,
+      data: contractRequest,
+      message: null
+    });
+  } else {
+
+    contractRequest.verifier = uuidv4();
+    await contractRequest.save();
+
+    const returnUrl = `http://localhost:3000/contract/docusign/return-url`;
+
+    const args = {};
+    args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}&verifier=${contractRequest.verifier}`;
+    args.signerEmail = contractRequest.recipient.email;
+    args.signerName = contractRequest.recipient.name;
+    args.signerClientId = contractRequest.recipient.uuid;
+    args.envelopeId = contractRequest.docusignEnvelopeId;
+
+    // Making the view
+    const view = docusign.makeRecipientViewRequest(args);
+    console.log('view : ', view);
+
+    //  Generating the recipient view (Embedded signing view)
+    const token = await docusign.getDocuSignJwtToken();
+    const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view);
+
+    console.log('results : ', results);
+
+    const returnData = {
+      ...contractRequest._doc,
+    }
+
+    returnData.docusignUrl = results.url;
+
+    console.log('returnData : ', returnData);
+
+    res.json({
+      success: true,
+      data: returnData,
+      message: null
+    });
+
+    // console.log('view : ', view);
+    // const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view)
+    // console.log('results : ', results);
+
+  }
+});
+
+router.post("/update-contract-status", async (req, res) => {
+  console.log('req.body : ', req.body);
+  const { query } = req.body;
+  const queryData = new URLSearchParams(query);
+  const requestId = queryData.get('requestId');
+  console.log('requestId : ', requestId);
+  const contractIdentifier = queryData.get('contractIdentifier');
+  console.log('contractIdentifier : ', contractIdentifier);
+  const verifier = queryData.get('verifier');
+  console.log('verifier : ', verifier);
+  const event = queryData.get('event');
+  console.log('event : ', event);
+
+  const successEvents = ['signing_complete', 'viewing_complete'];
+  const failedEvents = [''];
+
+  const status = event === 'signing_complete' || event === 'viewing_complete' ? 'signed' : 'rejected';
+
+  const contractRequest = await Contracts.findOne({
+    uuid: requestId,
+    identifier: contractIdentifier,
+    verifier,
+  });
+
+  contractRequest.status = status;
+  await contractRequest.save();
+
+  res.json({
+    success: true,
+    data: status,
+    message: null
+  });
+
 });
 
 //   TEMPORARY ROUTE FOR TESTING

@@ -119,10 +119,11 @@ export const makeEnvelopes = (envelopeArgs) => {
 
 
 
+
         // add the documents
         let doc = new docusign.Document();
         doc.documentBase64 = envelop.documentBase64;
-        doc.name = envelop.documentBase64; // can be different from actual file name
+        doc.name = envelop.documentName; // can be different from actual file name
         doc.fileExtension = 'pdf';
         doc.documentId = documentId;
 

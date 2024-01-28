@@ -50,6 +50,9 @@ router.use("/contract", contractController);
 router.use("/contact", SubmitContact);
 
 router.use("/home", homeController);
+
+
+
 /**
  * ADVOCATE ROUTES
  */
