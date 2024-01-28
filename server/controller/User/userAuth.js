@@ -104,12 +104,12 @@ router.post("/sign-up", validator.signUpValidator, async (req, res) => {
       email,
       password: hashed_password,
       permissions: {
-        contact: true,
-        document: true,
+        insights: true,
+        clients: true,
         newUser: true,
-        newContract: true,
-        contract: true,
-        newContract: true,
+        document: true,
+        permissions: true,
+        contract: true
       },
       isMainUser: true
     };

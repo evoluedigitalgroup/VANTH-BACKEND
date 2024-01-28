@@ -1,5 +1,5 @@
 import express from "express";
-import Admin from "../../models/admin";
+import User from "../../models/users";
 import authentication from "../../services/authentication";
 import lang from "../../helpers/locale/lang";
 
@@ -7,13 +7,13 @@ const router = express.Router();
 
 router.post(
   "/change-permission",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
-    const adminObj = req.admin;
-    if (adminObj.permissions.newAdmin) {
+    const userObj = req.user;
+    if (userObj.permissions.newUser) {
       const { permissions, id } = req.body;
       if (permissions) {
-        const changePermission = await Admin.findByIdAndUpdate(
+        const changePermission = await User.findByIdAndUpdate(
           id,
           { permissions },
           { new: true },
@@ -39,10 +39,10 @@ router.post(
 );
 
 router.post(
-  "/filter-admins-list",
-  authentication.AdminAuthValidateMiddleware,
+  "/filter-users-list",
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
-    const adminObj = req.admin;
+    const userObj = req.user;
 
     const { startFrom, totalFetchRecords, search = "" } = req.body;
 
@@ -51,24 +51,25 @@ router.post(
       const regExpValue = new RegExp(search, "i");
 
       searchObj = {
+        company: userObj.company,
         name: regExpValue,
       };
     }
 
-    if (adminObj.permissions.newAdmin) {
-      const totalAdminList = await Admin.find({
+    if (userObj.permissions.newUser) {
+      const totalUserList = await User.find({
         $and: [
-          { isMainAdmin: false },
+          { isMainUser: false },
           searchObj,
-          { _id: { $ne: adminObj.id } },
+          { _id: { $ne: userObj.id } },
         ],
       }).countDocuments();
 
-      const adminList = await Admin.find({
+      const userList = await User.find({
         $and: [
-          { isMainAdmin: false },
+          { isMainUser: false },
           searchObj,
-          { _id: { $ne: adminObj.id } },
+          { _id: { $ne: userObj.id } },
         ],
       })
         .sort({ _id: "desc" })
@@ -76,8 +77,8 @@ router.post(
         .limit(totalFetchRecords);
 
       const response = {
-        adminList,
-        totalAdminList,
+        userList,
+        totalUserList,
       };
 
       res.json({
