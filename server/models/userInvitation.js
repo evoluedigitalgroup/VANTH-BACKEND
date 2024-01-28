@@ -38,4 +38,4 @@ UserInviteSchema.index({
 UserInviteSchema.set("toJSON", toJSONOpt);
 UserInviteSchema.set("toObject", toObjectOpt);
 
-export default mongoose.model("UserInviteSchema", UserInviteSchema);
+export default mongoose.model("UserInvite", UserInviteSchema);
