@@ -407,14 +407,24 @@ router.post("/update-contract-status", async (req, res) => {
     verifier,
   });
 
-  contractRequest.status = status;
-  await contractRequest.save();
 
-  res.json({
-    success: true,
-    data: status,
-    message: null
-  });
+  if (contractRequest) {
+    contractRequest.status = status;
+    await contractRequest.save();
+
+    res.json({
+      success: true,
+      data: status,
+      message: null
+    });
+  } else {
+    res.json({
+      success: true,
+      data: 'not-found',
+      message: null
+    });
+  }
+
 
 });
 
