@@ -107,8 +107,11 @@ router.post("/sign-up", validator.signUpValidator, async (req, res) => {
         contact: true,
         document: true,
         newUser: true,
-        newContract: true
+        newContract: true,
+        contract: true,
+        newContract: true,
       },
+      isMainUser: true
     };
 
     const newAdmin = await new User(addObj).save();

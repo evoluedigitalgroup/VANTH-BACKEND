@@ -7,7 +7,13 @@ const toObjectOpt = mongoosePlugins.toObjectOpt;
 const Schema = mongoose.Schema;
 
 const VisitorSchema = new Schema(
-  {},
+  {
+    company: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      required: true
+    }
+  },
   {
     timestamps: true,
   },

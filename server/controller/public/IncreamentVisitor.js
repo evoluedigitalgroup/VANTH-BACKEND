@@ -11,7 +11,8 @@ const router = express();
 //   });
 // });
 router.post("/visitor-increment", async (req, res) => {
-  const visitorInc = await new Visitors().save();
+  const { company } = req.body;
+  const visitorInc = await new Visitors({ company }).save();
   res.json({
     success: true,
     data: null,
