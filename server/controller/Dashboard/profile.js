@@ -11,6 +11,7 @@ import Contacts from "../../models/Contacts";
 import _ from "lodash";
 import moment from "moment";
 import DocumentFile from "../../models/documentFile";
+import Company from "../../models/Company";
 
 const router = express.Router();
 const awsUploadFile = aws.uploadFile;
@@ -21,6 +22,11 @@ router.post(
     const userObj = req.user;
 
     const findUser = await User.findById({ _id: userObj.id });
+
+    const companyDetails = await Company.findById(findUser.company);
+
+    findUser._doc["companyData"] = companyDetails;
+
     res.json({
       success: true,
       data: findUser,
