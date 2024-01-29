@@ -2,7 +2,7 @@ import lang from "../../helpers/locale/lang";
 
 const userInviteValidator = async (req, res, next) => {
   const { designation, permissions, code } = req.body;
-  if (req.admin.permissions.newAdmin) {
+  if (req.user.permissions.newUser) {
     if (designation && permissions && code) {
       next();
     } else if (!designation) {
