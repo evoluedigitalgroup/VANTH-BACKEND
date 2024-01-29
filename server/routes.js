@@ -33,6 +33,8 @@ import homeController from "./controller/Dashboard/home";
 import contractController from "./controller/Dashboard/contract";
 
 
+import planController from "./controller/Plans/list";
+
 router.use("/admin-auth", adminAuthController);
 router.use("/auth", userAuthController);
 
@@ -50,6 +52,8 @@ router.use("/contract", contractController);
 router.use("/contact", SubmitContact);
 
 router.use("/home", homeController);
+
+router.use("/plans", planController);
 
 
 

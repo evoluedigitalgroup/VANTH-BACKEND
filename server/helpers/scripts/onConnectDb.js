@@ -73,7 +73,8 @@ const seedPlans = () => {
       allowedTotalUsers: 5,
       storageUnit: "GB",
       totalStorageAllowed: 25,
-      digitalContractSignatures: 25
+      digitalContractSignatures: 25,
+      sequence: 1
     },
     {
       planName: "Standard",
@@ -81,7 +82,8 @@ const seedPlans = () => {
       allowedTotalUsers: 10,
       storageUnit: "GB",
       totalStorageAllowed: 50,
-      digitalContractSignatures: 50
+      digitalContractSignatures: 50,
+      sequence: 2
     },
     {
       planName: "Premium",
@@ -89,7 +91,8 @@ const seedPlans = () => {
       allowedTotalUsers: 10,
       storageUnit: "TB",
       totalStorageAllowed: 1,
-      digitalContractSignatures: 100
+      digitalContractSignatures: 100,
+      sequence: 3
     }
   ];
 

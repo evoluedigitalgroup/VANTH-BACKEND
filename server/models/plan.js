@@ -73,6 +73,10 @@ const PlanSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    sequence: {
+      type: Number,
+      required: true,
+    }
   },
   {
     timestamps: true,
