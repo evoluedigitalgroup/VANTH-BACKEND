@@ -11,6 +11,7 @@ import DocumentFile from "../../models/documentFile";
 
 // //  SEEDING DATA
 import seedingDocumentFile from "../seedingData/documentFile";
+import Plan from "../../models/plan";
 
 const seedAdminUser = () => {
   return new Promise(async (resolve, reject) => {
@@ -63,155 +64,55 @@ const seedDocument = () => {
   });
 };
 
-// const seedPermission = () => {
-//   return new Promise(async (resolve, reject) => {
-//     const permissionList = await Permission.find({});
-//     if (permissionList.length) {
-//       const permissionLabel = permissionList.map(obj => obj.label);
+const seedPlans = () => {
 
-//       permissionSeeding.permissionSeeding.map(async obj => {
-//         if (permissionLabel.indexOf(obj.label) < 0) {
-//           await new Permission(obj).save();
-//         }
-//       });
-//       resolve();
-//     } else {
-//       await Permission.insertMany(permissionSeeding.permissionSeeding);
-//       resolve();
-//     }
-//   });
-// };
+  const initialPlans = [
+    {
+      planName: "Basic",
+      monthlyPlanPrice: 359,
+      allowedTotalUsers: 5,
+      storageUnit: "GB",
+      totalStorageAllowed: 25,
+      digitalContractSignatures: 25
+    },
+    {
+      planName: "Standard",
+      monthlyPlanPrice: 699,
+      allowedTotalUsers: 10,
+      storageUnit: "GB",
+      totalStorageAllowed: 50,
+      digitalContractSignatures: 50
+    },
+    {
+      planName: "Premium",
+      monthlyPlanPrice: 1459,
+      allowedTotalUsers: 10,
+      storageUnit: "TB",
+      totalStorageAllowed: 1,
+      digitalContractSignatures: 100
+    }
+  ];
 
-// // const seedConstantList = () => {
-// //   return new Promise(async (resolve, reject) => {
-// //     const totalConstantList = await ConstantList.find({}).countDocuments();
-// //     if (totalConstantList === 0) {
-// //       await ConstantList.insertMany(constantListSeedingData);
-// //       resolve();
-// //     } else {
-// //       resolve();
-// //     }
-// //   });
-// // };
-// const seedConfigurations = () => {
-//   return new Promise(async (resolve, reject) => {
-//     const ConfigurationList = await Configuration.find({});
+  return new Promise(async (resolve, reject) => {
+    const plansList = await Plan.find({});
 
-//     if (ConfigurationList.length) {
-//       const configurationKeys = ConfigurationList.map(obj => obj.key);
-//       const configurationValues = ConfigurationList.map(obj => obj.value);
+    if (!plansList.length) {
+      await Plan.insertMany(initialPlans);
+      resolve();
+    } else {
+      resolve();
+    }
+  });
+}
 
-//       ConfigurationSeedingData.map(async obj => {
-//         if (configurationKeys.indexOf(obj.key) < 0) {
-//           //  OBJ Configuration not exists in database.
-//           await new Configuration(obj).save();
-//         } else {
-//           //exits then update
-//           if (configurationValues.indexOf(obj.value) < 0) {
-//             // console.log("configurationValues", ConfigurationList);
-//             const foundItem = ConfigurationList.find(
-//               item => item.key === obj.key,
-//             );
-//             if (foundItem) {
-//               await Configuration.findByIdAndUpdate(foundItem.id, {
-//                 value: obj.value,
-//               });
-//             }
-//           }
-//         }
-//       });
-//       resolve();
-//     } else {
-//       await Configuration.insertMany(ConfigurationSeedingData);
-//       resolve();
-//     }
-//   });
-// };
-
-// //for payment type : Advocate APp
-// const seedPaymentType = () => {
-//   return new Promise(async (resolve, reject) => {
-//     const typeList = await PaymentType.find({});
-//     if (typeList.length) {
-//       const label = typeList.map(obj => obj.label);
-
-//       addPaymentType.PaymentType.map(async obj => {
-//         if (label.indexOf(obj.label) < 0) {
-//           await new PaymentType(obj).save();
-//         }
-//       });
-//       resolve();
-//     } else {
-//       await PaymentType.insertMany(addPaymentType.PaymentType);
-//       resolve();
-//     }
-//   });
-// };
-
-// //for payment Name : Advocate APp
-// const seedPaymentName = () => {
-//   return new Promise(async (resolve, reject) => {
-//     const list = await PaymentName.find({});
-//     if (list.length) {
-//       const label = list.map(obj => obj.label);
-
-//       addPaymentName.PaymentName.map(async obj => {
-//         if (label.indexOf(obj.label) < 0) {
-//           await new PaymentName(obj).save();
-//         }
-//       });
-//       resolve();
-//     } else {
-//       await PaymentName.insertMany(addPaymentName.PaymentName);
-//       resolve();
-//     }
-//   });
-// };
-
-// //for payment Office : Advocate APp
-// const seedPaymentOffice = () => {
-//   return new Promise(async (resolve, reject) => {
-//     const list = await PaymentOffice.find({});
-//     if (list.length) {
-//       const label = list.map(obj => obj.label);
-
-//       addPaymentOffice.PaymentOffice.map(async obj => {
-//         if (label.indexOf(obj.label) < 0) {
-//           await new PaymentOffice(obj).save();
-//         }
-//       });
-//       resolve();
-//     } else {
-//       await PaymentOffice.insertMany(addPaymentOffice.PaymentOffice);
-//       resolve();
-//     }
-//   });
-// };
-
-// //for Process Status : Advocate APp
-// const seedProcessStatus = () => {
-//   return new Promise(async (resolve, reject) => {
-//     const list = await ProcessStatus.find({});
-//     if (list.length) {
-//       const label = list.map(obj => obj.label);
-
-//       addProcessStatus.ProcessStatus.map(async obj => {
-//         if (label.indexOf(obj.label) < 0) {
-//           await new ProcessStatus(obj).save();
-//         }
-//       });
-//       resolve();
-//     } else {
-//       await ProcessStatus.insertMany(addProcessStatus.ProcessStatus);
-//       resolve();
-//     }
-//   });
-// };
 const init = async () => {
   seedAdminUser().then(() => {
     console.log("✅ Seed Admin");
     seedDocument().then(() => {
       console.log("✅ Seed Document");
+      seedPlans().then(() => {
+        console.log("✅ Seed Plan");
+      })
     });
   });
 };

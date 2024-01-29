@@ -14,6 +14,10 @@ const CompanySchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    selectedPlan: {
+      type: mongoose.Types.ObjectId,
+      default: null
+    },
     approveStatus: {
       type: String,
       enum: ["pending", "approved", "rejected"],
