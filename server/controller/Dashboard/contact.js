@@ -82,7 +82,7 @@ router.post(
       company: req.user.company,
     };
     let filterSearchName = {};
-    if (req.user.permissions.contact) {
+    if (req.user.permissions.clients) {
       if (search) {
         const regExpression = new RegExp(search, "i");
 
