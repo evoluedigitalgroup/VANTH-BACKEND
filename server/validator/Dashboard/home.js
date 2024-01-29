@@ -5,7 +5,7 @@ import Visitors from "../../models/visitors";
 import utility from "../../helpers/utility";
 import { toFloat } from "../../helpers/utility";
 
-export const weekValidation = async (condition, preCondition) => {
+export const weekValidation = async (condition, preCondition, user) => {
   return new Promise(async (resolve, reject) => {
     console.log("condition ::::: ", condition);
     console.log("preCondition ::::: ", preCondition);
@@ -30,6 +30,11 @@ export const weekValidation = async (condition, preCondition) => {
     );
 
     const visitorData = await Visitors.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: condition,
@@ -184,19 +189,18 @@ export const weekValidation = async (condition, preCondition) => {
 
     const growthOfContact = toFloat(
       (100 * (toFloat(currentContact) - toFloat(preContact))) /
-        toFloat(preContact),
+      toFloat(preContact),
     );
 
     const growthOfVisitor = toFloat(
       (100 * (toFloat(currentVisitor) - toFloat(preVisitor))) /
-        toFloat(preVisitor),
+      toFloat(preVisitor),
     );
 
     let tempVal = {};
     if (growthOfContact >= 0) {
-      tempVal.contact = `${
-        growthOfContact == "Infinity" ? 100 : growthOfContact
-      }% nessa semana`;
+      tempVal.contact = `${growthOfContact == "Infinity" ? 100 : growthOfContact
+        }% nessa semana`;
       tempVal.contactIndication = "increment";
     } else {
       tempVal.contact = `${Math.abs(
@@ -206,9 +210,8 @@ export const weekValidation = async (condition, preCondition) => {
     }
 
     if (growthOfVisitor >= 0) {
-      tempVal.visitor = `${
-        growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
-      }% nessa semana`;
+      tempVal.visitor = `${growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
+        }% nessa semana`;
       tempVal.visitorIndication = "increment";
     } else {
       tempVal.visitor = `${Math.abs(
@@ -255,7 +258,7 @@ export const weekValidation = async (condition, preCondition) => {
   });
 };
 
-export const monthlyValidation = async (condition, preCondition) => {
+export const monthlyValidation = async (condition, preCondition, user) => {
   return new Promise(async (resolve, reject) => {
     console.log("condition ::::: ", condition);
     console.log("preCondition ::::: ", preCondition);
@@ -284,6 +287,11 @@ export const monthlyValidation = async (condition, preCondition) => {
     );
 
     const visitorData = await Visitors.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: condition,
@@ -439,19 +447,18 @@ export const monthlyValidation = async (condition, preCondition) => {
 
     const growthOfContact = toFloat(
       (100 * (toFloat(currentContact) - toFloat(preContact))) /
-        toFloat(preContact),
+      toFloat(preContact),
     );
 
     const growthOfVisitor = toFloat(
       (100 * (toFloat(currentVisitor) - toFloat(preVisitor))) /
-        toFloat(preVisitor),
+      toFloat(preVisitor),
     );
 
     let tempVal = {};
     if (growthOfContact >= 0) {
-      tempVal.contact = `${
-        growthOfContact == "Infinity" ? 100 : growthOfContact
-      }% nessa Mês`;
+      tempVal.contact = `${growthOfContact == "Infinity" ? 100 : growthOfContact
+        }% nessa Mês`;
       tempVal.contactIndication = "increment";
     } else {
       tempVal.contact = `${Math.abs(
@@ -461,9 +468,8 @@ export const monthlyValidation = async (condition, preCondition) => {
     }
 
     if (growthOfVisitor >= 0) {
-      tempVal.visitor = `${
-        growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
-      }% nessa Mês`;
+      tempVal.visitor = `${growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
+        }% nessa Mês`;
       tempVal.visitorIndication = "increment";
     } else {
       tempVal.visitor = `${Math.abs(
@@ -502,7 +508,7 @@ export const monthlyValidation = async (condition, preCondition) => {
   });
 };
 
-export const yearlyValidation = async (condition, preCondition) => {
+export const yearlyValidation = async (condition, preCondition, user) => {
   return new Promise(async (resolve, reject) => {
     console.log("condition ::::: ", condition);
     console.log("preCondition ::::: ", preCondition);
@@ -534,6 +540,11 @@ export const yearlyValidation = async (condition, preCondition) => {
     );
 
     const visitorData = await Visitors.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: condition,
@@ -688,19 +699,18 @@ export const yearlyValidation = async (condition, preCondition) => {
 
     const growthOfContact = toFloat(
       (100 * (toFloat(currentContact) - toFloat(preContact))) /
-        toFloat(preContact),
+      toFloat(preContact),
     );
 
     const growthOfVisitor = toFloat(
       (100 * (toFloat(currentVisitor) - toFloat(preVisitor))) /
-        toFloat(preVisitor),
+      toFloat(preVisitor),
     );
 
     let tempVal = {};
     if (growthOfContact >= 0) {
-      tempVal.contact = `${
-        growthOfContact == "Infinity" ? 100 : growthOfContact
-      }% nessa Ano`;
+      tempVal.contact = `${growthOfContact == "Infinity" ? 100 : growthOfContact
+        }% nessa Ano`;
       tempVal.contactIndication = "increment";
     } else {
       tempVal.contact = `${Math.abs(
@@ -710,9 +720,8 @@ export const yearlyValidation = async (condition, preCondition) => {
     }
 
     if (growthOfVisitor >= 0) {
-      tempVal.visitor = `${
-        growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
-      }% nessa Ano`;
+      tempVal.visitor = `${growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
+        }% nessa Ano`;
       tempVal.visitorIndication = "increment";
     } else {
       tempVal.visitor = `${Math.abs(
@@ -757,7 +766,7 @@ export const yearlyValidation = async (condition, preCondition) => {
   });
 };
 
-export const customDateValidation = async (condition, preCondition) => {
+export const customDateValidation = async (condition, preCondition, user) => {
   return new Promise(async (resolve, reject) => {
     console.log("condition ::::: ", condition);
     console.log("preCondition ::::: ", preCondition);
@@ -787,6 +796,11 @@ export const customDateValidation = async (condition, preCondition) => {
     );
 
     const visitorData = await Visitors.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: condition,
@@ -955,21 +969,20 @@ export const customDateValidation = async (condition, preCondition) => {
 
     const growthOfContact = toFloat(
       (100 * (toFloat(currentContact) - toFloat(preContact))) /
-        toFloat(preContact),
+      toFloat(preContact),
     );
     // console.log("growthOfContact", growthOfContact);
 
     const growthOfVisitor = toFloat(
       (100 * (toFloat(currentVisitor) - toFloat(preVisitor))) /
-        toFloat(preVisitor),
+      toFloat(preVisitor),
     );
     // console.log("growthOfVisitor", growthOfVisitor);
 
     let tempVal = {};
     if (growthOfContact >= 0) {
-      tempVal.contact = `${
-        growthOfContact == "Infinity" ? 100 : growthOfContact
-      }% nessa Ano`;
+      tempVal.contact = `${growthOfContact == "Infinity" ? 100 : growthOfContact
+        }% nessa Ano`;
       tempVal.contactIndication = "increment";
     } else {
       tempVal.contact = `${Math.abs(
@@ -979,9 +992,8 @@ export const customDateValidation = async (condition, preCondition) => {
     }
 
     if (growthOfVisitor >= 0) {
-      tempVal.visitor = `${
-        growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
-      }% nessa Ano`;
+      tempVal.visitor = `${growthOfVisitor == "Infinity" ? 100 : growthOfVisitor
+        }% nessa Ano`;
       tempVal.visitorIndication = "increment";
     } else {
       tempVal.visitor = `${Math.abs(

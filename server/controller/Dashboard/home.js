@@ -11,8 +11,11 @@ const router = express.Router();
 
 router.post(
   "/insights-with-filter",
-  authentication.AdminAuthValidateMiddleware,
+  authentication.UserAuthValidateMiddleware,
   async (req, res) => {
+
+    const userObj = req.user;
+
     const { filter } = req.body;
 
     let condition, start, end;
@@ -49,6 +52,7 @@ router.post(
       const validMonth = await validator.monthlyValidation(
         condition,
         preCondition,
+        userObj
       );
 
       return res.json({
@@ -90,7 +94,7 @@ router.post(
       };
       const preCondition = { $gte: previousStart, $lt: previousEnd };
 
-      const validWeek = await validator.weekValidation(condition, preCondition);
+      const validWeek = await validator.weekValidation(condition, preCondition, userObj);
 
       return res.json({
         success: true,
@@ -123,6 +127,7 @@ router.post(
       const validYear = await validator.yearlyValidation(
         condition,
         preCondition,
+        userObj
       );
 
       return res.json({
@@ -159,6 +164,7 @@ router.post(
       const validCustomDate = await validator.customDateValidation(
         condition,
         preCondition,
+        userObj
       );
 
       return res.json({
