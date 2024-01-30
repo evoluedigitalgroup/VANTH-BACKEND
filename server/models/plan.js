@@ -76,7 +76,15 @@ const PlanSchema = new Schema(
     sequence: {
       type: Number,
       required: true,
-    }
+    },
+    pagarMeProductionPlanId: {
+      type: String,
+      required: true,
+    },
+    pagarMeTestingPlanId: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

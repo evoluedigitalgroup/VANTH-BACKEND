@@ -35,6 +35,11 @@ export const credentials = env => {
     PRODUCTION_HOST,
     PRODUCTION_MONGO_HOST,
 
+
+    PAGARME_SECRET_KEY,
+    PAGARME_API_URI,
+
+
     NODEMAILER_USERID,
     NODEMAILER_PASSWORD,
     TIMEZONE,
@@ -55,10 +60,10 @@ export const credentials = env => {
   config.defaultAdminMobileNumber = DEFAULT_ADMIN_MOBILE_NUMBER;
 
   config.passwordSalt = 12;
-  // config.forgotOtpTimeout = utility.timer().MINUTE_30;
 
-  // config.forgotOtpTimeout = utility.timer().MINUTE_30;
-  // config.loginOtpTimeout = utility.timer().MINUTE_30;
+  config.pagarMeSecretKey = PAGARME_SECRET_KEY;
+  config.pagarMeBaseUrl = PAGARME_API_URI;
+
   config.nodemailerUserId = NODEMAILER_USERID;
   config.nodemailerPassword = NODEMAILER_PASSWORD;
   config.defaultImage = `${LOCAL_HOST}/temp/default_image.webp`;

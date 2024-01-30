@@ -35,6 +35,9 @@ import contractController from "./controller/Dashboard/contract";
 
 import planController from "./controller/Plans/list";
 
+import paymentController from "./controller/Payment/subscribe";
+import webhookController from "./controller/Payment/webhook";
+
 router.use("/admin-auth", adminAuthController);
 router.use("/auth", userAuthController);
 
@@ -55,6 +58,9 @@ router.use("/home", homeController);
 
 router.use("/plans", planController);
 
+router.use("/payment", paymentController);
+
+router.use("/payment", webhookController);
 
 
 /**

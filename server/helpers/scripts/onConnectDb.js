@@ -74,7 +74,9 @@ const seedPlans = () => {
       storageUnit: "GB",
       totalStorageAllowed: 25,
       digitalContractSignatures: 25,
-      sequence: 1
+      sequence: 1,
+      pagarMeProductionPlanId: "plan_DjgRoVBTmTko6E9V",
+      pagarMeTestingPlanId: "plan_wGy5j07fLfEMY3v0"
     },
     {
       planName: "Standard",
@@ -83,7 +85,9 @@ const seedPlans = () => {
       storageUnit: "GB",
       totalStorageAllowed: 50,
       digitalContractSignatures: 50,
-      sequence: 2
+      sequence: 2,
+      pagarMeProductionPlanId: "plan_JBWpl4WFQFoEbVYG",
+      pagarMeTestingPlanId: "plan_GqD1mLEfvfKenaW2"
     },
     {
       planName: "Premium",
@@ -92,7 +96,9 @@ const seedPlans = () => {
       storageUnit: "TB",
       totalStorageAllowed: 1,
       digitalContractSignatures: 100,
-      sequence: 3
+      sequence: 3,
+      pagarMeProductionPlanId: "plan_DovP3L2CmCexVnmJ",
+      pagarMeTestingPlanId: "plan_bPaLXxwTGTpO60pj"
     }
   ];
 
