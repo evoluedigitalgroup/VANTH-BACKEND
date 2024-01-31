@@ -43,10 +43,15 @@ export const credentials = env => {
     NODEMAILER_USERID,
     NODEMAILER_PASSWORD,
     TIMEZONE,
+
+    FRONTEND_URL,
   } = process.env;
 
   const config = {};
   config.env = env;
+
+  config.frontendUrl = FRONTEND_URL;
+
   config.jwtSecretRefreshUser = JWT_SECRET_REFRESH_USER;
 
   config.jwtSecretAccessUser = JWT_SECRET_ACCESS_USER;

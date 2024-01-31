@@ -17,6 +17,7 @@ import * as docusign from "../../services/docusign";
 import { generateUrlPdfToBase64 } from "../../helpers/docusign";
 import Contracts from "../../models/Contracts";
 import mongoose from "mongoose";
+import config from "../../config";
 
 const awsUploadFile = aws.uploadFile;
 
@@ -392,7 +393,7 @@ router.post("/get-contract-details", async (req, res) => {
     contractRequest.verifier = uuidv4();
     await contractRequest.save();
 
-    const returnUrl = `http://localhost:3000/contract/docusign/return-url`;
+    const returnUrl = `${config.frontendUrl}/contract/docusign/return-url`;
 
     const args = {};
     args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}&verifier=${contractRequest.verifier}`;
