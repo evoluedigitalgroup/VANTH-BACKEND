@@ -16,6 +16,12 @@ const CompanySchema = mongoose.Schema(
     },
     selectedPlan: {
       type: mongoose.Types.ObjectId,
+      ref: "Plan",
+      default: null
+    },
+    subscription: {
+      type: mongoose.Types.ObjectId,
+      ref: "Subscription",
       default: null
     },
     approveStatus: {

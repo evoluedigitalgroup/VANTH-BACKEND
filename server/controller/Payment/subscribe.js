@@ -4,6 +4,8 @@ import { subscribePlan } from "../../helpers/pagarMe";
 import authentication from "../../services/authentication";
 import Plan from "../../models/plan";
 import config from "../../config";
+import Company from '../../models/Company';
+import Subscription from "../../models/subscription";
 const router = express.Router();
 
 
@@ -107,15 +109,59 @@ router.post("/subscribe-plan", authentication.UserAuthValidateMiddleware, async 
         .then(async result => {
             console.log('result : ', result);
 
-            res.json({
-                success: true,
-                message: "ok",
-                data: result,
-            });
+            const insertSubscription = {
+                plan: planDetails.plan._id,
+                planDetails: planDetails.plan,
+                user: userObj._id,
+                company: userObj.company,
+                events: [result]
+            }
+
+
+            const checkAlreadySubscribed = await Subscription.findOne({ company: userObj.company });
+
+            if (checkAlreadySubscribed) {
+                Subscription.findByIdAndUpdate(checkAlreadySubscribed._id, {
+                    $push: {
+                        events: result
+                    }
+                });
+
+                await Company.findByIdAndUpdate(userObj.company, {
+                    selectedPlan: planDetails.plan._id,
+                    subscription: checkAlreadySubscribed._id
+                });
+
+                res.json({
+                    success: true,
+                    message: "ok",
+                    data: result,
+                });
+            } else {
+                const subscriptionValue = await new Subscription(insertSubscription).save();
+                await Company.findByIdAndUpdate(userObj.company, {
+                    selectedPlan: planDetails.plan._id,
+                    subscription: subscriptionValue._id
+                });
+
+                res.json({
+                    success: true,
+                    message: "ok",
+                    data: result,
+                });
+            }
+
+
 
         })
         .catch((err) => {
-            console.log('err : ', err);
+
+            res.json({
+                success: false,
+                message: err.message,
+                data: null,
+            });
+
         })
 
 });
