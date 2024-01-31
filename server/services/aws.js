@@ -2,6 +2,7 @@ import aws from "aws-sdk";
 import fs from "fs";
 import path from "path";
 import config from "../config";
+import utility from "../helpers/utility";
 
 aws.config.update({
   secretAccessKey: config.aws.secretAccessKey,
@@ -48,7 +49,39 @@ const deleteFile = fileName => {
   });
 };
 
+const calculateFileSizeCreated = async (company, startDate, endDate) => {
+
+  const startDateValue = new Date(startDate);
+  const endDateValue = new Date(endDate);
+
+  const fromDate = startDateValue;
+  const toDate = endDateValue;
+
+
+  console.log("fromDate : ", fromDate);
+  console.log("toDate : ", toDate);
+
+  const params = {
+    Bucket: config.aws.bucketName,
+    Prefix: company,
+  };
+
+  const objects = await s3.listObjectsV2(params).promise();
+
+  const filteredObjects = objects.Contents.filter(obj => {
+    const lastModified = new Date(obj.LastModified);
+    return lastModified >= fromDate && lastModified <= toDate;
+  });
+
+  const totalSize = filteredObjects.reduce((acc, obj) => acc + obj.Size, 0);
+
+  const humanReadableSize = utility.bytesToSizeMB(totalSize);
+
+  return humanReadableSize;
+};
+
 export default {
   uploadFile,
   deleteFile,
+  calculateFileSizeCreated
 };

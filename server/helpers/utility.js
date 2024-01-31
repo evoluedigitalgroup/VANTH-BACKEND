@@ -541,6 +541,13 @@ const getFinanceTotal = array => {
   }, 0);
   return { result, newList };
 };
+
+
+const bytesToSizeMB = (bytes) => {
+  const megabytes = Math.round((bytes / (1024 * 1024)) * 100) / 100; // Convert bytes to megabytes
+  return megabytes;
+}
+
 export default {
   timer,
   time,
@@ -572,4 +579,5 @@ export default {
   getFinanceTotal,
   multipleImageUpload,
   generateCharter,
+  bytesToSizeMB
 };
