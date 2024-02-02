@@ -46,7 +46,9 @@ router.post(
 
     const { startFrom, totalFetchRecords, search = "" } = req.body;
 
-    let searchObj = {};
+    let searchObj = {
+      company: userObj.company,
+    };
     if (search) {
       const regExpValue = new RegExp(search, "i");
 
