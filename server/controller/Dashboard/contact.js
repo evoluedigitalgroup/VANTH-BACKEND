@@ -21,27 +21,29 @@ router.post(
       { new: true },
     );
 
-    const findData = await Contacts.findById({ _id: contactId });
-    console.log("findData", findData);
-    const filterDocStatus = findData?.docStatus;
-    console.log("filterDocStatus", filterDocStatus);
+    const findData = await Contacts.findById({ _id: contactId }).populate("documentRequest");
+    const filterDocs = findData?.documentRequest;
+    const filterDocStatus = findData?.docs;
 
     var result = {};
+    var resultData = {};
     // const findData = {};
 
-    var keys = Object.keys(permission);
+    var keys = Object.keys(filterDocStatus);
 
-    for (var key in filterDocStatus) {
-      if (keys.includes(key)) {
-        result[key] = false;
-      } else if (!keys.includes(key)) {
-        result[key] = filterDocStatus[key];
+    for (var [key, value] of Object.entries(permission)) {
+      if (value) {
+        if (!keys.includes(key)) {
+          result[key] = null;
+        } else {
+          result[key] = filterDocStatus[key];
+        }
       }
     }
 
     await Contacts.findByIdAndUpdate(
       contactId,
-      { docStatus: result },
+      { docs: result },
       { new: true },
     );
 
