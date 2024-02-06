@@ -61,12 +61,12 @@ const signUpValidator = async (req, res, next) => {
   console.log("req.body : ", req.body);
   try {
 
-    if (password.length < 6 || password.length > 15) {
+    if (password.length < 6) {
       res.json({
         success: false,
         message:
           lang
-            .PASSWORD_LENGTH_MINIMUM_6_AND_MAXIMUM_15_CHARACTERS_ALLOWED_ONLY
+            .PASSWORD_LENGTH_MUST_BE_AT_LEAST_6_CHARACTER
             .PR,
       });
     }
