@@ -73,6 +73,23 @@ router.post("/get-document-file",
     });
   });
 
+router.post("/get-document-file-public",
+  async (req, res) => {
+    const { company } = req.body;
+    const documentFileList = await DocumentFile.find({
+      $or: [{
+        isPublic: true
+      }, {
+        company
+      }]
+    });
+
+    res.json({
+      success: true,
+      data: documentFileList,
+    });
+  });
+
 router.post(
   "/filter-contacts",
   authentication.UserAuthValidateMiddleware,
