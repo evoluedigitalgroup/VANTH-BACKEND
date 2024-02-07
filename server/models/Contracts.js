@@ -3,6 +3,23 @@ import mongoosePlugins from "../helpers/mongoose-plugins/options";
 
 const toJSONOpt = mongoosePlugins.toJSONOpt;
 const toObjectOpt = mongoosePlugins.toObjectOpt;
+
+
+const ContractDocumentSchema = mongoose.Schema({
+  template: {
+    type: mongoose.Schema.ObjectId,
+    ref: "ContractTemplate"
+  },
+  documentId: {
+    type: String,
+    required: true
+  },
+  recipientId: {
+    type: String,
+    required: true
+  }
+});
+
 const ContractSchema = mongoose.Schema(
   {
     uuid: {
@@ -35,6 +52,10 @@ const ContractSchema = mongoose.Schema(
       type: [mongoose.Schema.ObjectId],
       ref: "ContractTemplate"
     },
+    contractDocumentIds: {
+      type: [ContractDocumentSchema],
+      default: []
+    },
     docusignEnvelopeId: {
       type: String,
       default: null
@@ -46,6 +67,11 @@ const ContractSchema = mongoose.Schema(
     status: {
       type: String,
       enum: ["pending", "signed", "rejected"],
+      default: "pending",
+    },
+    isApproved: {
+      type: String,
+      enum: ["approved", "rejected", "pending"],
       default: "pending",
     },
   },

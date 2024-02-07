@@ -274,6 +274,7 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     const contactDetails = await Contacts.findById(selectedContact);
 
+    //  Finding the selected contract templates
     const templates = await ContractTemplates.find({
       _id: {
         $in: selectedTemplates
@@ -294,17 +295,34 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     console.log('contractRequest : ', contractRequest)
 
+    const contractDocumentIds = [];
+
     let templateBase64Data = [];
     for (let i = 0; i < templates.length; i++) {
       const obj = templates[i];
       const base64Data = await generateUrlPdfToBase64(obj.templateFile);
+
+      const documentId = Math.floor(100000000 + Math.random() * 900000000);
+      const recipientId = Math.floor(100000000 + Math.random() * 900000000);
+
+      contractDocumentIds.push({
+        template: obj.id,
+        documentId,
+        recipientId
+      });
+
       templateBase64Data.push({
+        documentId,
+        recipientId,
         documentBase64: base64Data,
         name: obj.originalFileName,
         uuid: obj.uuid,
         id: obj.id
       });
     }
+
+    contractRequest.contractDocumentIds = contractDocumentIds;
+    await contractRequest.save();
 
     const token = await docusign.getDocuSignJwtToken()
 
@@ -327,10 +345,10 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       const obj = templateBase64Data[i];
 
       const envelopeArgs = {};
-      envelopeArgs.documentId = Math.floor(100000000 + Math.random() * 900000000);
+      envelopeArgs.documentId = obj.documentId;
       envelopeArgs.signerEmail = signerEmail;
       envelopeArgs.signerName = signerName;
-      envelopeArgs.recipientId = Math.floor(100000000 + Math.random() * 900000000);
+      envelopeArgs.recipientId = obj.recipientId;
       envelopeArgs.documentName = obj.name; //
       envelopeArgs.signerClientId = signerClientId; //
       envelopeArgs.documentBase64 = obj.documentBase64; //
@@ -397,6 +415,9 @@ router.post("/get-contract-details", async (req, res) => {
 
     const args = {};
     args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}&verifier=${contractRequest.verifier}`;
+
+    console.log('args.dsReturnUrl : ', args.dsReturnUrl);
+
     args.signerEmail = contractRequest.recipient.email;
     args.signerName = contractRequest.recipient.name;
     args.signerClientId = contractRequest.recipient.uuid;
@@ -438,13 +459,12 @@ router.post("/update-contract-status", async (req, res) => {
   const { query } = req.body;
   const queryData = new URLSearchParams(query);
   const requestId = queryData.get('requestId');
-  console.log('requestId : ', requestId);
+
   const contractIdentifier = queryData.get('contractIdentifier');
-  console.log('contractIdentifier : ', contractIdentifier);
+
   const verifier = queryData.get('verifier');
-  console.log('verifier : ', verifier);
+
   const event = queryData.get('event');
-  console.log('event : ', event);
 
   const successEvents = ['signing_complete', 'viewing_complete'];
   const failedEvents = [''];
