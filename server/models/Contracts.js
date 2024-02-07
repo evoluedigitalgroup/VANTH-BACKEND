@@ -64,6 +64,10 @@ const ContractSchema = mongoose.Schema(
       type: Object,
       default: null
     },
+    signedDocument: {
+      type: String,
+      default: null
+    },
     status: {
       type: String,
       enum: ["pending", "signed", "rejected"],

@@ -53,6 +53,7 @@ router.post("/filter-contracts", authentication.UserAuthValidateMiddleware, asyn
     const totalFindData = await Contracts.find(filter).countDocuments();
     const findData = await Contracts.find(filter)
       .populate("recipient")
+      .populate("contractDocumentIds.template")
       .sort({ _id: -1 })
       .skip(startFrom)
       .limit(totalFetchRecords);
@@ -496,6 +497,37 @@ router.post("/update-contract-status", async (req, res) => {
   }
 
 
+});
+
+router.post("/get-contract-download-link", authentication.UserAuthValidateMiddleware, async (req, res) => {
+  const { contractId, documentId } = req.body;
+
+
+
+  const contractRequest = await Contracts.findById(contractId);
+
+  if (!contractRequest) {
+    res.json({
+      success: false,
+      data: null,
+      message: 'Contract not found'
+    });
+  }
+
+  const token = await docusign.getDocuSignJwtToken();
+
+
+  const resultData = docusign.downloadDocument(token, contractRequest.docusignEnvelopeId, documentId);
+
+  // console.log('resultData :: ', resultData)
+
+  const urlToDownload = `${docusign.basePath}/v2.1/accounts/${docusign.accountId}/envelopes/${contractRequest.docusignEnvelopeId}/documents/${documentId}`;
+
+  res.json({
+    success: true,
+    data: urlToDownload,
+    message: null
+  });
 });
 
 export default router;

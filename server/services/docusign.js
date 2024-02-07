@@ -1,3 +1,4 @@
+import fs from 'fs';
 import docusign from "docusign-esign";
 import { key } from '../docusignKeys/privatekey';
 
@@ -5,14 +6,14 @@ import { key } from '../docusignKeys/privatekey';
 const apiClient = new docusign.ApiClient();
 
 const secret_key = process.env.DOCUSIGN_SECRET_KEY;
-const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
+export const accountId = process.env.DOCUSIGN_ACCOUNT_ID;
 
 const client_id = process.env.DOCUSIGN_CLIENT_ID;
 const user_id = process.env.DOCUSIGN_USER_ID;
 
 
 const docuSignBasePath = process.env.DOCUSIGN_BASE_PATH;
-const basePath = `${docuSignBasePath}/${process.env.DOCUSIGN_BASE_API_PATH}`;
+export const basePath = `${docuSignBasePath}/${process.env.DOCUSIGN_BASE_API_PATH}`;
 const oAuthBasePath = process.env.DOCUSIGN_OAUTH_BASE_PATH;
 apiClient.setBasePath(basePath);
 apiClient.setOAuthBasePath(oAuthBasePath);
@@ -298,3 +299,31 @@ export const initiateEmbeddedSigning = async (args) => {
 
     return { envelopeId: args.envelopeId, redirectUrl: results.url };
 };
+
+export const downloadDocument = async (token, envelopeId, documentId, fileName) => {
+
+
+
+    let dsApiClient = new docusign.ApiClient();
+    dsApiClient.setBasePath(basePath);
+    dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + token);
+    let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+    let results = null;
+
+
+    // Step 2. call Envelopes::create API method
+    // Exceptions will be caught by the calling function
+    results = await envelopesApi.getDocument(accountId, envelopeId, documentId);
+
+    const outputPath = fileName;
+
+    const signedDocumentPathToTempFile = path.resolve("public", "temp", fileName);
+
+    fs.writeFileSync(signedDocumentPathToTempFile, Buffer.from(data, 'binary'));
+
+
+
+    console.log('results : ', results);
+
+    return results;
+}
