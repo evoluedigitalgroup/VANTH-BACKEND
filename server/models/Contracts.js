@@ -17,8 +17,17 @@ const ContractDocumentSchema = mongoose.Schema({
   recipientId: {
     type: String,
     required: true
-  }
-});
+  },
+  signedDocument: {
+    type: String,
+    default: null
+  },
+  isApproved: {
+    type: String,
+    enum: ["approved", "rejected", "pending"],
+    default: "pending",
+  },
+}, { _id: false });
 
 const ContractSchema = mongoose.Schema(
   {
@@ -64,20 +73,11 @@ const ContractSchema = mongoose.Schema(
       type: Object,
       default: null
     },
-    signedDocument: {
-      type: String,
-      default: null
-    },
     status: {
       type: String,
       enum: ["pending", "signed", "rejected"],
       default: "pending",
-    },
-    isApproved: {
-      type: String,
-      enum: ["approved", "rejected", "pending"],
-      default: "pending",
-    },
+    }
   },
   {
     timestamps: true,

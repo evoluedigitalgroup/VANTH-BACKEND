@@ -467,27 +467,63 @@ router.post("/update-contract-status", async (req, res) => {
 
   const event = queryData.get('event');
 
-  const successEvents = ['signing_complete', 'viewing_complete'];
-  const failedEvents = [''];
-
   const status = event === 'signing_complete' || event === 'viewing_complete' ? 'signed' : 'rejected';
 
   const contractRequest = await Contracts.findOne({
     uuid: requestId,
     identifier: contractIdentifier,
     verifier,
-  });
+  }).populate("contractDocumentIds.template");
 
 
   if (contractRequest) {
-    contractRequest.status = status;
-    await contractRequest.save();
-
     res.json({
       success: true,
       data: status,
       message: null
     });
+
+    console.log('Started working on downloading & storing the document on the cloud');
+
+    const token = await docusign.getDocuSignJwtToken();
+
+    const updatedContractDocumentIds = [];
+
+    for (let i = 0; i < contractRequest.contractDocumentIds.length; i++) {
+      const doc = contractRequest.contractDocumentIds[i];
+
+      console.log('doc : ', doc);
+
+      const documentId = doc.documentId;
+      const originalFileName = doc.template.originalFileName;
+
+
+      const fileNameArray = originalFileName.split('.');
+      const fileNameValue = originalFileName.split(' ').join('_').split('.').filter((item, index) => index < fileNameArray.length - 1).join('_');
+      const fileExt = originalFileName.split('.').pop();
+
+      const signedFileName = `${fileNameValue}_signed.${fileExt}`;
+
+      const signedFileUrl = await docusign.downloadDocument(
+        token,
+        contractRequest.company,
+        contractRequest.docusignEnvelopeId,
+        documentId,
+        signedFileName
+      );
+
+      updatedContractDocumentIds.push({
+        ...doc,
+        signedDocument: signedFileUrl
+      });
+
+    }
+
+    contractRequest.status = status;
+    contractRequest.contractDocumentIds = updatedContractDocumentIds;
+
+    await contractRequest.save();
+
   } else {
     res.json({
       success: true,
@@ -495,39 +531,52 @@ router.post("/update-contract-status", async (req, res) => {
       message: null
     });
   }
-
-
 });
 
-router.post("/get-contract-download-link", authentication.UserAuthValidateMiddleware, async (req, res) => {
-  const { contractId, documentId } = req.body;
+router.post("/update-contract-approval-status", authentication.UserAuthValidateMiddleware, async (req, res) => {
+  const userObj = req.user;
 
+  const { contractId, documentId, action } = req.body;
 
+  console.log('req.body : ', req.body);
 
-  const contractRequest = await Contracts.findById(contractId);
+  const contractRequest = await Contracts.findOne({
+    id: contractId,
+    company: userObj.company,
+  });
 
   if (!contractRequest) {
     res.json({
       success: false,
-      data: null,
-      message: 'Contract not found'
+      message: lang.RECORD_NOT_FOUND.PR
     });
   }
 
-  const token = await docusign.getDocuSignJwtToken();
+  const updatedContractDocumentIds = contractRequest.contractDocumentIds.map((item) => {
+    if (item.documentId === documentId) {
+      item.isApproved = action;
+      return item;
+    } else {
+      return item;
+    }
+  });
 
+  const updateStatus = await Contracts.findByIdAndUpdate(contractId, {
+    contractDocumentIds: updatedContractDocumentIds
+  });
 
-  const resultData = docusign.downloadDocument(token, contractRequest.docusignEnvelopeId, documentId);
-
-  // console.log('resultData :: ', resultData)
-
-  const urlToDownload = `${docusign.basePath}/v2.1/accounts/${docusign.accountId}/envelopes/${contractRequest.docusignEnvelopeId}/documents/${documentId}`;
+  if (!updateStatus) {
+    res.json({
+      success: false,
+      message: lang.SOMETHING_WENT_WRONG.PR
+    });
+  }
 
   res.json({
     success: true,
-    data: urlToDownload,
-    message: null
+    message: lang.RECORD_UPDATED_SUCCESSFULLY.PR
   });
+
 });
 
 export default router;

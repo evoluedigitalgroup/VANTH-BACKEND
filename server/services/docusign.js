@@ -1,6 +1,10 @@
 import fs from 'fs';
+import path from 'path';
 import docusign from "docusign-esign";
 import { key } from '../docusignKeys/privatekey';
+
+import aws from "../services/aws";
+import utility from '../helpers/utility';
 
 
 const apiClient = new docusign.ApiClient();
@@ -21,6 +25,8 @@ apiClient.setOAuthBasePath(oAuthBasePath);
 const rsaKey = key;
 
 const jwtLifeSec = 10 * 60; // requested lifetime for the JWT is 10 min
+
+const awsUploadFile = aws.uploadFile;
 
 
 export const getDocuSignJwtToken = async () => {
@@ -300,7 +306,13 @@ export const initiateEmbeddedSigning = async (args) => {
     return { envelopeId: args.envelopeId, redirectUrl: results.url };
 };
 
-export const downloadDocument = async (token, envelopeId, documentId, fileName) => {
+export const downloadDocument = async (
+    token,
+    company,
+    envelopeId,
+    documentId,
+    fileName
+) => {
 
 
 
@@ -315,15 +327,20 @@ export const downloadDocument = async (token, envelopeId, documentId, fileName) 
     // Exceptions will be caught by the calling function
     results = await envelopesApi.getDocument(accountId, envelopeId, documentId);
 
-    const outputPath = fileName;
-
     const signedDocumentPathToTempFile = path.resolve("public", "temp", fileName);
 
-    fs.writeFileSync(signedDocumentPathToTempFile, Buffer.from(data, 'binary'));
+    fs.writeFileSync(signedDocumentPathToTempFile, Buffer.from(results, 'binary'));
 
+    const previewImageFileAwsRecord = await awsUploadFile(
+        signedDocumentPathToTempFile,
+        `${company}/contract-templates/signed/${fileName}`,
+    )
 
+    if (!previewImageFileAwsRecord.Location) {
+        return false;
+    } else {
+        await utility.deleteImage(signedDocumentPathToTempFile);
 
-    console.log('results : ', results);
-
-    return results;
+        return previewImageFileAwsRecord.Location;
+    }
 }
