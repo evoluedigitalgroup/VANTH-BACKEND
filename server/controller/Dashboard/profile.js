@@ -126,7 +126,9 @@ router.post(
     const { search = "" } = req.body;
 
     if (userObj.permissions.document) {
-      let searchObj = {};
+      let searchObj = {
+        company: userObj.company,
+      };
       if (search) {
         const regExpression = new RegExp(search, "i");
         searchObj.name = regExpression;
@@ -149,6 +151,8 @@ router.post(
           .locale("pt-br")
           .format("DD MMM YYYY");
         const time = moment(obj.updatedAt).locale("pt-br").format("h:mm");
+
+        console.log("obj.documentRequest", obj.documentRequest);
 
         Object.keys(obj.documentRequest.requiredPermission).map(i => {
           if (i != "CNPJ" && i != "CPF") {
