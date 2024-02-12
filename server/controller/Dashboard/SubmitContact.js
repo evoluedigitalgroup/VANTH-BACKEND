@@ -73,10 +73,7 @@ router.post("/submit-contact",
           message: lang.SOMETHING_WENT_WRONG.PR,
         });
       });
-  });
-// {
-//     "name": "John Doe",
-//     "emailOrPhone": "9876543210", // OR abc@def.com
-//     "cpfOrCnpj": "413.814.666-05"   // Generate it at https://www.freetool.dev/cpf-generator-validator
-// }
+  }
+);
+
 export default router;

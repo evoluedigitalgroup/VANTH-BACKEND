@@ -130,6 +130,27 @@ router.post("/submit-documents", async (req, res) => {
   });
 });
 
+router.post("/update-contact", async (req, res) => {
+  const { companyId, contactId, requestId, otherInformation } = req.body;
+
+  const findContact = await Contacts.findById(contactId).populate("documentRequest");
+
+
+  if (findContact.company != companyId) {
+    return res.json({ success: false, message: "Invalid company", data: null });
+  }
+
+  if (findContact.documentRequest.id != requestId) {
+    return res.json({ success: false, message: "Invalid request", data: null });
+  }
+
+  const updatedContact = await Contacts.findByIdAndUpdate(contactId, {
+    otherInformation
+  });
+
+  res.json({ success: true, message: "Update Contact" });
+})
+
 router.post("/address-proof", async (req, res) => {
   const form = new multiparty.Form();
 

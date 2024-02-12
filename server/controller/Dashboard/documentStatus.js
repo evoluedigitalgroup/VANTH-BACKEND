@@ -12,7 +12,6 @@ import User from "../../models/users";
 
 const router = express();
 
-
 router.post(
   "/approved-document",
   authentication.UserAuthValidateMiddleware,
