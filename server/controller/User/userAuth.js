@@ -22,9 +22,8 @@ router.post("/login", validator.userLoginValidator, async (req, res) => {
     const validPassword = await bcrypt.compare(password, verifyEmail.password);
     if (validPassword) {
       const jwtUserObj = authentication.generateObjForJwt(verifyEmail);
-      console.log("jwtUserObj", jwtUserObj);
+
       const jwtTokens = await authentication.UserSignInJwt(jwtUserObj);
-      console.log("jwtTokens", jwtTokens);
 
       let responseUserObj = authentication.getUserObjForResponse(verifyEmail);
 
