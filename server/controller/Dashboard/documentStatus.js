@@ -25,24 +25,24 @@ router.post(
     const documentType = await DocumentFile.find({});
 
     const validType = documentType.find(i => i.type === type);
-    console.log("validType", validType);
 
     if (validType) {
       if (action === "approved") {
+        let docStatus = data.docStatus;
+
         const response = {
-          url: data.docs[validType.type].url,
+          url: data.docs[validType.type]?.url ? data.docs[validType.type]?.url : docStatus[validType.type],
           approved: true,
           approvedBy: userObj.id,
           approvedDate: new Date(),
         };
-        console.log("response", response);
+
+        docStatus = _.omit(docStatus, validType.type);
 
         const docs = data.docs;
         docs[validType.type] = response;
 
-        console.log("docs", docs);
-
-        const updateVal = await Contacts.findByIdAndUpdate(id, { docs });
+        const updateVal = await Contacts.findByIdAndUpdate(id, { docs, docStatus });
 
         res.json({
           success: true,
@@ -53,6 +53,8 @@ router.post(
         const dataStatus = data.docStatus;
 
         const docs = data.docs;
+        dataStatus[validType.type] = data.docs[validType.type]?.url
+
         docs[validType.type] = null;
 
         const updateVal = await Contacts.findByIdAndUpdate(
@@ -61,7 +63,6 @@ router.post(
             docs,
             docStatus: {
               ...dataStatus,
-              [`${validType.type}`]: true,
             },
           },
           { new: true },
