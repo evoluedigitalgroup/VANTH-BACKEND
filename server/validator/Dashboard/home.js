@@ -80,6 +80,11 @@ export const weekValidation = async (condition, preCondition, user) => {
     const contactData = await Contacts.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: condition,
         },
       },
@@ -125,6 +130,11 @@ export const weekValidation = async (condition, preCondition, user) => {
     const preVisitorData = await Visitors.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: preCondition,
         },
       },
@@ -147,6 +157,11 @@ export const weekValidation = async (condition, preCondition, user) => {
     ]);
 
     const preContactData = await Contacts.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: preCondition,
@@ -338,6 +353,11 @@ export const monthlyValidation = async (condition, preCondition, user) => {
     const contactData = await Contacts.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: condition,
         },
       },
@@ -383,6 +403,11 @@ export const monthlyValidation = async (condition, preCondition, user) => {
     const preVisitorData = await Visitors.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: preCondition,
         },
       },
@@ -405,6 +430,11 @@ export const monthlyValidation = async (condition, preCondition, user) => {
     ]);
 
     const preContactData = await Contacts.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: preCondition,
@@ -590,6 +620,11 @@ export const yearlyValidation = async (condition, preCondition, user) => {
     const contactData = await Contacts.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: condition,
         },
       },
@@ -635,6 +670,11 @@ export const yearlyValidation = async (condition, preCondition, user) => {
     const preVisitorData = await Visitors.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: preCondition,
         },
       },
@@ -657,6 +697,11 @@ export const yearlyValidation = async (condition, preCondition, user) => {
     ]);
 
     const preContactData = await Contacts.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: preCondition,
@@ -846,6 +891,11 @@ export const customDateValidation = async (condition, preCondition, user) => {
     const contactData = await Contacts.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: condition,
         },
       },
@@ -899,6 +949,11 @@ export const customDateValidation = async (condition, preCondition, user) => {
     const preVisitorData = await Visitors.aggregate([
       {
         $match: {
+          company: user.company,
+        }
+      },
+      {
+        $match: {
           createdAt: preCondition,
         },
       },
@@ -921,6 +976,11 @@ export const customDateValidation = async (condition, preCondition, user) => {
     ]);
 
     const preContactData = await Contacts.aggregate([
+      {
+        $match: {
+          company: user.company,
+        }
+      },
       {
         $match: {
           createdAt: preCondition,
