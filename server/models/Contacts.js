@@ -28,11 +28,11 @@ const ContactSchema = mongoose.Schema(
     },
     CPF: {
       type: String,
-      required: true,
+      default: ''
     },
     CNPJ: {
       type: String,
-      required: true,
+      default: ''
     },
     documentRequest: {
       type: mongoose.Schema.ObjectId,

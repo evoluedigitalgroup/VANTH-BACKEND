@@ -75,12 +75,9 @@ export const ValidId = (req, res, next) => {
 export const ValidContact = (req, res, next) => {
   const { name, email, phone, CPF, CNPJ } = req.body;
 
-  if (name && email && phone && CPF && CNPJ) {
-    if (cpf.isValid(CPF)) {
-      if (cnpj.isValid(CNPJ)) {
-        // if (("" + emailOrPhone).includes("@")) {
-        //   next();
-        // } else {
+  if (name && email && phone && (CPF || CNPJ)) {
+    if (CPF || CNPJ) {
+      if (cpf.isValid(CPF) || cnpj.isValid(CNPJ)) {
         if (utility.checkValidMobile(phone) == true) {
           next();
         } else {
@@ -89,18 +86,12 @@ export const ValidContact = (req, res, next) => {
             message: lang.PLEASE_ENTER_VALID_MOBILE_NUMBER.PR,
           });
         }
-        // }
       } else {
         res.json({
           success: false,
-          message: lang.PLEASE_ENTER_VALID_CNPJ_NUMBER.PR,
+          message: lang.PLEASE_ENTER_VALID_CPF_OR_CNPJ_NUMBER.PR,
         });
       }
-    } else {
-      res.json({
-        success: false,
-        message: lang.PLEASE_ENTER_VALID_CPF_NUMBER.PR,
-      });
     }
   } else if (!name && !email && !phone && !CPF && !CNPJ) {
     res.json({

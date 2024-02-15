@@ -337,6 +337,10 @@ const lang = {
     EN: "Please enter valid cnpj number",
     PR: "Por favor, insira um número de cnpj válido",
   },
+  PLEASE_ENTER_VALID_CPF_OR_CNPJ_NUMBER: {
+    EN: "Please enter valid cpf or cnpj number",
+    PR: "Insira um número de CPF ou CNPJ válido",
+  },
   TELEPHONE_NUMBER_IS_INVALID: {
     EN: "Telephone number is invalid",
     PR: "O número de telefone é inválido",
