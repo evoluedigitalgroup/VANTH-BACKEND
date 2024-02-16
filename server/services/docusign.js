@@ -303,7 +303,7 @@ export const initiateEmbeddedSigning = async (args) => {
         recipientViewRequest: args.viewRequest,
     });
 
-    return { envelopeId: args.envelopeId, redirectUrl: results.url };
+    return { envelopeId: args.envelopeId, redirectUrl: results.url + '&locale=pt_BR' };
 };
 
 export const downloadDocument = async (
