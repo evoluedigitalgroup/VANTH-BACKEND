@@ -27,7 +27,7 @@ const getPaymentData = async (type, id) => {
 
 
 const getPlanId = (planDetails) => {
-    if (config.env === "production") {
+    if (config.env === "prod") {
         return planDetails.plan?.pagarMeProductionPlanId;
     } else {
         return planDetails.plan?.pagarMeTestingPlanId;
@@ -155,7 +155,7 @@ router.post("/subscribe-plan", authentication.UserAuthValidateMiddleware, async 
 
         })
         .catch((err) => {
-
+            console.log('err in subscribePlan : ', err);
             res.json({
                 success: false,
                 message: err.message,
