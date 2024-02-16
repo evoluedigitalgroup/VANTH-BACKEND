@@ -438,7 +438,7 @@ router.post("/get-contract-details", async (req, res) => {
       ...contractRequest._doc,
     }
 
-    returnData.docusignUrl = results.url;
+    returnData.docusignUrl = results.url + '&locale=pt_BR';
 
     console.log('returnData : ', returnData);
 
