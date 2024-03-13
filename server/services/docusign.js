@@ -62,36 +62,36 @@ export const makeEnvelope = (args) => {
     // The order in the docs array determines the order in the envelope
     env.documents = [doc1];
 
-    // Create a signer recipient to sign the document, identified by name and email
-    // We set the clientUserId to enable embedded signing for the recipient
-    // We're setting the parameters via the object creation
-    let signer1 = docusign.Signer.constructFromObject({
-        email: args.signerEmail,
-        name: args.signerName,
-        clientUserId: args.signerClientId,
-        recipientId: 1,
-    });
+    let signersList = [];
 
-    // Create signHere fields (also known as tabs) on the documents,
-    // We're using anchor (autoPlace) positioning
-    //
-    // The DocuSign platform seaches throughout your envelope's
-    // documents for matching anchor strings.
-    let signHere1 = docusign.SignHere.constructFromObject({
-        anchorString: '###SIGN_HERE###',
-        anchorYOffset: '10',
-        anchorUnits: 'pixels',
-        anchorXOffset: '20',
-    });
-    // Tabs are set per recipient / signer
-    let signer1Tabs = docusign.Tabs.constructFromObject({
-        signHereTabs: [signHere1],
-    });
-    signer1.tabs = signer1Tabs;
+    for (let i = 0; i < args.signersClientId.length; i++) {
+        const signer = docusign.Signer.constructFromObject({
+            email: args.signersEmail[i],
+            name: args.signersName[i],
+            clientUserId: args.signersClientId[i],
+            recipientId: args.signersClientId[i] // Certifique-se de que cada signatário tenha um recipientId exclusivo
+        });
+
+        console.log("IHASBDIYGAVSDIUBASIDN", signer)
+    
+        const signHere = docusign.SignHere.constructFromObject({
+            anchorString: args.signersName[i], // Certifique-se de que cada signatário tenha um anchorString único
+            anchorYOffset: '10',
+            anchorUnits: 'pixels',
+            anchorXOffset: '20',
+        });
+    
+        const signerTabs = docusign.Tabs.constructFromObject({
+            signHereTabs: [signHere],
+        });
+    
+        signer.tabs = signerTabs;
+        signersList.push(signer)
+    }
 
     // Add the recipient to the envelope object
     let recipients = docusign.Recipients.constructFromObject({
-        signers: [signer1],
+        signers: signersList,
     });
     env.recipients = recipients;
 
@@ -116,16 +116,12 @@ export const makeEnvelopes = (envelopeArgs) => {
 
 
     let envelopes = [];
-
-    for (let i = 0; i < envelopeArgs.length; i++) {
-        const envelop = envelopeArgs[i];
-
+    
+    for (let i = 0; i < envelopeArgs.envelopeArgs.length; i++) {
+        const envelop = envelopeArgs.envelopeArgs[i];
 
         const documentId = envelop.documentId;
         console.log('documentId : ', documentId);
-
-
-
 
         // add the documents
         let doc = new docusign.Document();
@@ -149,20 +145,41 @@ export const makeEnvelopes = (envelopeArgs) => {
     // Create a signer recipient to sign the document, identified by name and email
     // We set the clientUserId to enable embedded signing for the recipient
     // We're setting the parameters via the object creation
-    let signer1 = docusign.Signer.constructFromObject({
-        email: envelopeArgs[0].signerEmail,
-        name: envelopeArgs[0].signerName,
-        clientUserId: envelopeArgs[0].signerClientId,
-        recipientId: envelopeArgs[0].recipientId
-    });
+    
+    let signersList = [];
 
-    // Create signHere fields (also known as tabs) on the documents,
+    for (let i = 0; i < envelopeArgs.signersClientId.length; i++) {
+
+        const signer = docusign.Signer.constructFromObject({
+            email: envelopeArgs.signersEmail[i],
+            name: envelopeArgs.signersName[i],
+            clientUserId: envelopeArgs.signersClientId[i],
+            recipientId: envelopeArgs.signersClientId[i]
+        });
+
+        const signHere = docusign.SignHere.constructFromObject({
+            anchorString: envelopeArgs.signersName[i], // Certifique-se de que cada signatário tenha um anchorString único
+            anchorYOffset: '10',
+            anchorUnits: 'pixels',
+            anchorXOffset: '20',
+        });
+    
+        const signerTabs = docusign.Tabs.constructFromObject({
+            signHereTabs: [signHere],
+        });
+    
+        signer.tabs = signerTabs;
+        signersList.push(signer)
+    }
+
+    /**
+     *     // Create signHere fields (also known as tabs) on the documents,
     // We're using anchor (autoPlace) positioning
     //
     // The DocuSign platform seaches throughout your envelope's
     // documents for matching anchor strings.
     let signHere1 = docusign.SignHere.constructFromObject({
-        anchorString: '###SIGN_HERE###',
+        anchorString: envelopeArgs[0].signerName,
         anchorYOffset: '10',
         anchorUnits: 'pixels',
         anchorXOffset: '20',
@@ -172,15 +189,20 @@ export const makeEnvelopes = (envelopeArgs) => {
         signHereTabs: [signHere1],
     });
     signer1.tabs = signer1Tabs;
+     * 
+     * 
+     * 
+     */
 
     // Add the recipient to the envelope object
-    let recipients = docusign.Recipients.constructFromObject({
-        signers: [signer1],
+    const recipients = docusign.Recipients.constructFromObject({
+        signers: signersList,
     });
     env.recipients = recipients;
 
     // Request that the envelope be sent by setting |status| to "sent".
     // To request that the envelope be created as a draft, set to "created"
+
     env.status = 'sent';
     return env;
 }
@@ -193,7 +215,8 @@ export const createEnvelope = async (args) => {
     let results = null;
 
     // Step 1. Make the envelope request body
-    let envelope = makeEnvelope(args.envelopeArgs);
+    let envelope = makeEnvelope(args);
+
 
     // Step 2. call Envelopes::create API method
     // Exceptions will be caught by the calling function
@@ -216,13 +239,16 @@ export const createEnvelopes = async (args) => {
     let results = null;
 
     // Step 1. Make the envelope request body
-    let envelope = makeEnvelopes(args.envelopeArgs);
+    let envelope = makeEnvelopes(args);
+    console.log(envelope)
 
     // Step 2. call Envelopes::create API method
     // Exceptions will be caught by the calling function
     results = await envelopesApi.createEnvelope(accountId, {
         envelopeDefinition: envelope,
     });
+
+    console.log('results envelopes: ', results);
 
     return results;
 }
@@ -256,6 +282,7 @@ export const makeRecipientViewRequest = (args) => {
     viewRequest.email = args.signerEmail;
     viewRequest.userName = args.signerName;
     viewRequest.clientUserId = args.signerClientId;
+    viewRequest.recipientId = args.signerClientId;
 
     // DocuSign recommends that you redirect to DocuSign for the
     // embedded signing. There are multiple ways to save state.

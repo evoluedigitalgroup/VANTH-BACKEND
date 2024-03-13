@@ -162,8 +162,9 @@ router.post(
           success: true,
           message: lang.VISITOR_APPROVED_SUCCESSFULLY.PR,
         });
-      } else {
-        await Contacts.findByIdAndUpdate(
+      } else if (action === 'rejected') {
+
+         await Contacts.findByIdAndUpdate(
           id,
           { contactApprove: "rejected" },
           { new: true },
@@ -172,6 +173,13 @@ router.post(
         res.json({
           success: true,
           message: lang.VISITOR_REJECTED_SUCCESSFULLY.PR,
+        });
+      } else {
+        await Contacts.findByIdAndDelete(id);
+
+        res.json({
+          success: true,
+          message: lang.VISITOR_REMOVED_SUCCESSFULLY.PR,
         });
       }
     }

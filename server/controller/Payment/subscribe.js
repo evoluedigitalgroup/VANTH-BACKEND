@@ -21,7 +21,7 @@ const getPaymentData = async (type, id) => {
         return {
             interval: 1,
             plan: planData
-        };;
+        };
     }
 }
 
@@ -73,8 +73,6 @@ router.post("/subscribe-plan", authentication.UserAuthValidateMiddleware, async 
     const planPrice = parseFloat(parseFloat(Math.round(planDetails?.plan?.monthlyPlanPrice) * 100).toFixed(2));
 
     console.log('planPrice : ', planPrice);
-
-
 
     const subscriptionObj = {
         customer: {

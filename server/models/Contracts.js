@@ -54,8 +54,18 @@ const ContractSchema = mongoose.Schema(
       ref: "User",
     },
     recipient: {
-      type: mongoose.Schema.ObjectId,
+      type: [mongoose.Schema.ObjectId],
       ref: "Contact",
+    },
+    recipientsStatus : {
+      type: [{
+        recipient: String,
+        status: String
+      }],
+      default: [],
+    },
+    ableToSign: {
+      type: String
     },
     contractTemplates: {
       type: [mongoose.Schema.ObjectId],
@@ -75,7 +85,7 @@ const ContractSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "signed", "rejected"],
+      enum: ["pending", "signed", "rejected", "pending_others"],
       default: "pending",
     }
   },

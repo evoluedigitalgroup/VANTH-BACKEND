@@ -15,8 +15,6 @@ router.post("/usage", authentication.UserAuthValidateMiddleware, async (req, res
     const planDetails = companyData?.subscription?.planDetails;
 
     if (planDetails) {
-
-
         const existingTotalUsers = await Users.find({ company: userObj.company }).countDocuments();
 
         const currentCycle = getCurrentCycle(companyData.subscription.createdAt);

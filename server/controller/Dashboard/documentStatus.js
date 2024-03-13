@@ -23,8 +23,9 @@ router.post(
     const data = await Contacts.findById({ _id: id });
 
     const documentType = await DocumentFile.find({});
-
     const validType = documentType.find(i => i.type === type);
+
+    console.log('PAKJSHJDASD', data, documentType, validType)
 
     if (validType) {
       if (action === "approved") {
@@ -33,6 +34,28 @@ router.post(
         const response = {
           url: data.docs[validType.type]?.url ? data.docs[validType.type]?.url : docStatus[validType.type],
           approved: true,
+          approvedBy: userObj.id,
+          approvedDate: new Date(),
+        };
+
+        docStatus = _.omit(docStatus, validType.type);
+
+        const docs = data.docs;
+        docs[validType.type] = response;
+
+        const updateVal = await Contacts.findByIdAndUpdate(id, { docs, docStatus });
+
+        res.json({
+          success: true,
+          data: updateVal,
+          message: lang.SOCIAL_CONTRACT_SUCCESSFULLY.PR,
+        });
+      } else if (action === "rejected") {
+        let docStatus = data.docStatus;
+
+        const response = {
+          url: data.docs[validType.type]?.url ? data.docs[validType.type]?.url : docStatus[validType.type],
+          approved: false,
           approvedBy: userObj.id,
           approvedDate: new Date(),
         };
@@ -255,5 +278,50 @@ router.post('/add-new-document-type',
     })
   }
 );
+
+router.post('/remove-document-type',
+  authentication.UserAuthValidateMiddleware,
+  async (req, res) => {
+    const { key, title } = req.body;
+
+    try {
+      const keyExist = await DocumentFile.findOne({ type: key, company: req.user.company });
+      const documentFileSize = DocumentFile.countDocuments({ company: req.user.company })
+
+      if (documentFileSize <= 1) {
+        return res.json({
+          success: true,
+          data: null,
+          message: 'Você não pode remover mais items!'
+        });
+      }
+
+      if (keyExist) {
+        const deletedDocument = await DocumentFile.findOneAndDelete({ type: key, company: req.user.company });
+
+        return res.json({
+          success: true,
+          data: deletedDocument,
+          message: lang.DOCUMENT_TYPE_REMOVED.PR
+        });
+      } else {
+        return res.json({
+          success: false,
+          data: null,
+          message: lang.DOCUMENT_TYPE_NOT_FOUND.PR
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: 'Internal Server Error'
+      });
+    }
+  }
+);
+
+
 
 export default router;

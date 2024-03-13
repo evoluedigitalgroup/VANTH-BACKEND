@@ -18,6 +18,8 @@ import { generateUrlPdfToBase64 } from "../../helpers/docusign";
 import Contracts from "../../models/Contracts";
 import mongoose from "mongoose";
 import config from "../../config";
+import { forEach } from "lodash";
+import sendMail from "../../services/nodemailer";
 
 const awsUploadFile = aws.uploadFile;
 
@@ -271,9 +273,13 @@ router.post("/get-templates", authentication.UserAuthValidateMiddleware, async (
 router.post("/create-contract", authentication.UserAuthValidateMiddleware, async (req, res) => {
   try {
     const { id, company } = req.user;
-    const { selectedTemplates, selectedContact } = req.body;
+    const { selectedTemplates, selectedContacts } = req.body;
+    console.log(selectedContacts)
 
-    const contactDetails = await Contacts.findById(selectedContact);
+    const contactPromises = selectedContacts.map(item => Contacts.findById(item))
+    const contactDetailsList = await Promise.all(contactPromises)
+    
+    console.log('contactDetailsList : ', contactDetailsList)
 
     //  Finding the selected contract templates
     const templates = await ContractTemplates.find({
@@ -288,7 +294,7 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
       identifier: uuidv4(),
       company,
       user: id,
-      recipient: selectedContact,
+      recipient: contactDetailsList,
       contractTemplates: selectedTemplates,
     };
 
@@ -329,15 +335,17 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     console.log('token : ', token)
 
-    const signerEmail = contactDetails.email;
-    const signerName = contactDetails.name;
-    const signerClientId = contactDetails.uuid;
+    const signersEmail = contactDetailsList.map(contact => contact.email)
+    const signersName = contactDetailsList.map(contact => contact.name)
+    const signersClientId = contactDetailsList.map(contact => contact.uuid)
+
+    console.log(signersClientId)
 
     const args = {};
     args.accessToken = token;
-    args.signerEmail = signerEmail;
-    args.signerName = signerName;
-    args.signerClientId = signerClientId;
+    args.signersEmail = signersEmail;
+    args.signersName = signersName;
+    args.signersClientId = signersClientId;
     args.dsPingUrl = null;
 
     args.envelopeArgs = [];
@@ -347,11 +355,11 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
       const envelopeArgs = {};
       envelopeArgs.documentId = obj.documentId;
-      envelopeArgs.signerEmail = signerEmail;
-      envelopeArgs.signerName = signerName;
-      envelopeArgs.recipientId = obj.recipientId;
+      envelopeArgs.signersEmail = signersEmail;
+      envelopeArgs.signersName = signersName;
+      envelopeArgs.recipientId = signersClientId;
       envelopeArgs.documentName = obj.name; //
-      envelopeArgs.signerClientId = signerClientId; //
+      envelopeArgs.signersClientId = signersClientId; //
       envelopeArgs.documentBase64 = obj.documentBase64; //
       args.envelopeArgs.push(envelopeArgs);
     }
@@ -366,9 +374,43 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     // const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view)
     // console.log('results : ', results);
 
-    contractRequest.docusignEnvelopeId = resultsData.envelopeId;
-    await contractRequest.save();
 
+
+    contractRequest.docusignEnvelopeId = resultsData.envelopeId;
+    
+    contractRequest.recipient.map((val, i) => {
+      contractRequest.recipientsStatus.push({
+        recipient: val,
+        status: 'pending'
+      });
+
+      const sentEmail = contactDetailsList.filter((item) => item.id == val).map(item => item.email);
+
+      sentEmail.forEach((email, _) => {
+        const redirectLink = `${config.host}/requested-signature/${contractRequest?.company}/${contractRequest?.uuid}/${contractRequest?.docusignEnvelopeId}/${val}`;
+      
+        const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #0068FF; font-size: 28px; margin-bottom: 20px;">Vanth Docs System & Docusign</h1>
+          <h2 style="color: #0068FF; font-size: 24px; margin-bottom: 20px;">Por favor, assine seu contrato!</h2>
+          <p style="font-size: 16px;">Este email contém um link seguro da Vanth Docs System. Não compartilhe este email, link ou código de acesso com outras pessoas.</p>
+          <p style="font-size: 16px;">Assine documentos eletronicamente em minutos. É seguro, protegido e legalmente vinculativo. Esteja você em um escritório, em casa ou em outro lugar, ou mesmo em outro país, o nosso parceiro DocuSign fornece uma solução profissional confiável de gerenciamento de transações digitais (Digital Transaction Management™).</p>
+          <p style="font-size: 16px;">Tem alguma dúvida sobre o documento? Se você precisar modificar o documento ou tiver dúvidas sobre os detalhes do documento, entre em contato com o remetente enviando um email diretamente para ele.</p>
+          <p style="font-size: 16px;">Se você tiver problemas para assinar o documento, visite a página <a href="https://vanthdocs.com.br/help" style="color: #0068FF; text-decoration: none;">Ajuda com a assinatura</a> em nosso Centro de suporte.</p>
+          <p style="font-size: 16px;">Acesse o site <a href="https://vanthdocs.com.br" style="color: #0068FF; text-decoration: none;">vanthdocs.com.br</a>.</p>
+          <p style="font-size: 16px;">Atenciosamente,<br/>Equipe Vanth Docs</p>
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="${redirectLink}" style="display: inline-block; background-color: #0068FF; color: #ffffff; font-size: 18px; text-decoration: none; padding: 10px 20px; border-radius: 5px;">Clique aqui para assinar o contrato!</a>
+          </div>
+        </div>
+        `;  
+    
+        sendMail(email, 'Assinatura de Contrato - Vanth Docs System', htmlContent);
+      })
+    })
+
+    contractRequest.ableToSign = selectedContacts[0]
+    await contractRequest.save();
 
     res.json({
       success: true,
@@ -390,8 +432,8 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
 router.post("/get-contract-details", async (req, res) => {
   console.log('req.body : ', req.body);
-
-  const { companyId, contractId, docusignEnvelopeId } = req.body;
+  
+  const { companyId, contractId, docusignEnvelopeId, recipientViwer } = req.body;
 
   const contractRequest = await Contracts.findOne({
     company: companyId,
@@ -400,6 +442,16 @@ router.post("/get-contract-details", async (req, res) => {
   }).populate("company").populate("recipient");
 
   console.log('contractRequest : ', contractRequest);
+
+  if (contractRequest.ableToSign != recipientViwer) {
+    return res.json({
+      data: {
+        message: 'Not able to sign!',
+        ableRecipient: contractRequest.recipient.filter((item) => { if (item.id == contractRequest.ableToSign) { return item } }),
+        success: false
+      },
+    })
+  }
 
   if (contractRequest.status === 'signed' || contractRequest.status === 'rejected') {
     res.json({
@@ -415,14 +467,31 @@ router.post("/get-contract-details", async (req, res) => {
     const returnUrl = `${config.frontendUrl}/contract/docusign/return-url`;
 
     const args = {};
-    args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}&verifier=${contractRequest.verifier}`;
+    args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}&verifier=${contractRequest.verifier}&recipientViwer=${recipientViwer}`;
 
     console.log('args.dsReturnUrl : ', args.dsReturnUrl);
 
-    args.signerEmail = contractRequest.recipient.email;
-    args.signerName = contractRequest.recipient.name;
-    args.signerClientId = contractRequest.recipient.uuid;
+    let signerEmail = null;
+    let signerName = null;
+    let signerClientId = null;
+
+    const matchingRecipient = contractRequest.recipient.find(contact => contact.id == recipientViwer);
+
+    if (matchingRecipient) {
+        signerEmail = matchingRecipient.email;
+        signerName = matchingRecipient.name;
+        signerClientId = matchingRecipient.uuid;
+    } else {
+        console.log("Erro: Nenhum contato correspondente encontrado para o recipientViwer fornecido.");
+    }
+    
+    args.signerEmail = signerEmail;
+    args.signerName = signerName;
+    args.signerClientId = signerClientId;
+
     args.envelopeId = contractRequest.docusignEnvelopeId;
+
+    console.log(args)
 
     // Making the view
     const view = docusign.makeRecipientViewRequest(args);
@@ -467,7 +536,9 @@ router.post("/update-contract-status", async (req, res) => {
 
   const event = queryData.get('event');
 
-  const status = event === 'signing_complete' || event === 'viewing_complete' ? 'signed' : 'rejected';
+  const recipientViwer = queryData.get('recipientViwer')
+
+  let status = event === 'signing_complete' || event === 'viewing_complete' ? 'signed' : 'rejected';
 
   const contractRequest = await Contracts.findOne({
     uuid: requestId,
@@ -475,14 +546,9 @@ router.post("/update-contract-status", async (req, res) => {
     verifier,
   }).populate("contractDocumentIds.template");
 
+  console.log(contractRequest)
 
   if (contractRequest) {
-    res.json({
-      success: true,
-      data: status,
-      message: null
-    });
-
     console.log('Started working on downloading & storing the document on the cloud');
 
     const token = await docusign.getDocuSignJwtToken();
@@ -519,8 +585,72 @@ router.post("/update-contract-status", async (req, res) => {
 
     }
 
+    let allRecipientsSigned = true;
+    let recipientFound = false;
+    
+    contractRequest.recipientsStatus.forEach((r, i) => {
+      if (r.recipient === recipientViwer) {
+        recipientFound = true;
+        if (r.status !== 'signed') {
+          allRecipientsSigned = false;
+        }
+      }
+    });
+    
+    if (!recipientFound) {
+      allRecipientsSigned = false;
+    }
+
+    const updatedRecipientsStatus = [...contractRequest.recipientsStatus];
+
+    const recipientIndex = updatedRecipientsStatus.findIndex(
+      recipient => recipient.recipient === recipientViwer
+    );
+
+    if (recipientIndex !== -1) {
+      updatedRecipientsStatus[recipientIndex].status = status;
+    } else {
+      updatedRecipientsStatus.push({
+        recipient: recipientViwer,
+        status: status
+      });
+    }
+
+    contractRequest.recipientsStatus = updatedRecipientsStatus
+    
+    if (contractRequest.ableToSign == recipientViwer) {
+      contractRequest.recipientsStatus.forEach((item, i) => {
+        if (item.status == 'pending') {
+          contractRequest.ableToSign = item.recipient
+          return
+        }
+      })
+    }
+
+    if (contractRequest.recipientsStatus.length !== contractRequest.recipient.length) {
+      allRecipientsSigned = false;
+    } else {
+      allRecipientsSigned = true
+
+      contractRequest.recipientsStatus.forEach((r, i) => {
+        if(!(r.status == 'signed')) {
+          allRecipientsSigned = false
+        }
+      })
+    }
+    
+    status = allRecipientsSigned ? 'signed' : 'pending_others';
     contractRequest.status = status;
+    
+    res.json({
+      success: true,
+      data: status,
+      message: null
+    });
+    
+
     contractRequest.contractDocumentIds = updatedContractDocumentIds;
+    console.log('SIGNERDDDDD : ', contractRequest)
 
     await contractRequest.save();
 
@@ -536,12 +666,12 @@ router.post("/update-contract-status", async (req, res) => {
 router.post("/update-contract-approval-status", authentication.UserAuthValidateMiddleware, async (req, res) => {
   const userObj = req.user;
 
-  const { contractId, documentId, action } = req.body;
+  const { contractId, documentId, uuid, action } = req.body;
 
-  console.log('req.body : ', req.body);
+  console.log('req.body : ', req.body, userObj);
 
   const contractRequest = await Contracts.findOne({
-    id: contractId,
+    uuid: uuid,
     company: userObj.company,
   });
 
@@ -552,18 +682,23 @@ router.post("/update-contract-approval-status", authentication.UserAuthValidateM
     });
   }
 
-  const updatedContractDocumentIds = contractRequest.contractDocumentIds.map((item) => {
+  console.log('contract request: ', contractRequest)
+
+  const updatedContractDocumentIds = contractRequest.contractDocumentIds.map((item, index) => {
     if (item.documentId === documentId) {
       item.isApproved = action;
-      return item;
-    } else {
-      return item;
+      console.log("IS APPROVED? SENDS", item.isApproved, action)
     }
+    return item;
   });
 
-  const updateStatus = await Contracts.findByIdAndUpdate(contractId, {
-    contractDocumentIds: updatedContractDocumentIds
-  });
+  console.log('Updated Contract DocumentId: ', updatedContractDocumentIds)
+
+  const updateStatus = await Contracts.findOneAndUpdate(
+    {uuid: uuid},
+    {contractDocumentIds: updatedContractDocumentIds},
+    {new: true}
+  );
 
   if (!updateStatus) {
     res.json({

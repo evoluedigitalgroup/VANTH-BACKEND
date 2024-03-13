@@ -1344,5 +1344,17 @@ const lang = {
     EN: "Template Created Successfully",
     PR: "Modelo criado com sucesso",
   },
+  VISITOR_REMOVED_SUCCESSFULLY: {
+    EN: "Visitor have been removed successfully!",
+    PR: "O visitante foi removido com sucesso!",
+  },
+  DOCUMENT_TYPE_REMOVED: {
+    EN: "The type of document have been removed!",
+    PR: "O tipo de documento foi removido com sucesso!",
+  },
+  DOCUMENT_TYPE_NOT_FOUND: {
+    EN: "Document type not found!",
+    PR: "O tipo do documento não foi encontrado!",
+  }
 };
 export default lang;

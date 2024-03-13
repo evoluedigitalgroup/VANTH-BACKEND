@@ -65,6 +65,8 @@ router.post(
         password: hashed_password,
       });
 
+      
+
       res.json({
         success: true,
         data: null,
@@ -108,7 +110,8 @@ router.post("/sign-up", validator.signUpValidator, async (req, res) => {
         newUser: true,
         document: true,
         permissions: true,
-        contract: true
+        contract: true,
+        tutorial: false,
       },
       isMainUser: true
     };
