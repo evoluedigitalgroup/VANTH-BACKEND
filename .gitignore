@@ -1,9 +1,9 @@
 node_modules
 dist-server
-*.pem
+#*.pem
 # .env.*
-.env
-customScripts
-todo.c
-.DS_Store
-server/docusignKeys
+#.env
+#customScripts
+#todo.c
+#.DS_Store
+#server/docusignKeys
