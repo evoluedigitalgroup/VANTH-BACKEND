@@ -278,8 +278,6 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     const contactPromises = selectedContacts.map(item => Contacts.findById(item))
     const contactDetailsList = await Promise.all(contactPromises)
-    
-    console.log('contactDetailsList : ', contactDetailsList)
 
     //  Finding the selected contract templates
     const templates = await ContractTemplates.find({
@@ -299,8 +297,6 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     };
 
     const contractRequest = await Contracts.create(insertedData);
-
-    console.log('contractRequest : ', contractRequest)
 
     const contractDocumentIds = [];
 
@@ -333,13 +329,9 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 
     const token = await docusign.getDocuSignJwtToken()
 
-    console.log('token : ', token)
-
     const signersEmail = contactDetailsList.map(contact => contact.email)
     const signersName = contactDetailsList.map(contact => contact.name)
     const signersClientId = contactDetailsList.map(contact => contact.uuid)
-
-    console.log(signersClientId)
 
     const args = {};
     args.accessToken = token;
@@ -441,8 +433,6 @@ router.post("/get-contract-details", async (req, res) => {
     docusignEnvelopeId
   }).populate("company").populate("recipient");
 
-  console.log('contractRequest : ', contractRequest);
-
   if (contractRequest.ableToSign != recipientViwer) {
     return res.json({
       data: {
@@ -495,7 +485,6 @@ router.post("/get-contract-details", async (req, res) => {
 
     // Making the view
     const view = docusign.makeRecipientViewRequest(args);
-    console.log('view : ', view);
 
     //  Generating the recipient view (Embedded signing view)
     const token = await docusign.getDocuSignJwtToken();
@@ -545,8 +534,6 @@ router.post("/update-contract-status", async (req, res) => {
     identifier: contractIdentifier,
     verifier,
   }).populate("contractDocumentIds.template");
-
-  console.log(contractRequest)
 
   if (contractRequest) {
     console.log('Started working on downloading & storing the document on the cloud');
@@ -648,9 +635,7 @@ router.post("/update-contract-status", async (req, res) => {
       message: null
     });
     
-
     contractRequest.contractDocumentIds = updatedContractDocumentIds;
-    console.log('SIGNERDDDDD : ', contractRequest)
 
     await contractRequest.save();
 

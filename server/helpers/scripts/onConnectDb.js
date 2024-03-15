@@ -68,37 +68,37 @@ const seedPlans = () => {
 
   const initialPlans = [
     {
-      planName: "Basic",
+      planName: "Personal",
+      monthlyPlanPrice: 99,
+      allowedTotalUsers: 1,
+      storageUnit: "GB",
+      totalStorageAllowed: 10,
+      digitalContractSignatures: 10,
+      sequence: 1,
+      pagarMeProductionPlanId: "plan_ZRDxXP5IyIG4JAEr",
+      pagarMeTestingPlanId: "plan_N8Z79AvT1Tb4D2Er"
+    },
+    {
+      planName: "Standard",
       monthlyPlanPrice: 359,
       allowedTotalUsers: 5,
       storageUnit: "GB",
       totalStorageAllowed: 25,
       digitalContractSignatures: 25,
-      sequence: 1,
-      pagarMeProductionPlanId: "plan_DjgRoVBTmTko6E9V",
-      pagarMeTestingPlanId: "plan_wGy5j07fLfEMY3v0"
+      sequence: 2,
+      pagarMeProductionPlanId: "plan_WZ9Nb30fpf52nGX6",
+      pagarMeTestingPlanId: "plan_dE0lyOEHgHAqDbga"
     },
     {
-      planName: "Standard",
+      planName: "Premium",
       monthlyPlanPrice: 699,
       allowedTotalUsers: 10,
       storageUnit: "GB",
       totalStorageAllowed: 50,
       digitalContractSignatures: 50,
-      sequence: 2,
-      pagarMeProductionPlanId: "plan_JBWpl4WFQFoEbVYG",
-      pagarMeTestingPlanId: "plan_GqD1mLEfvfKenaW2"
-    },
-    {
-      planName: "Premium",
-      monthlyPlanPrice: 1459,
-      allowedTotalUsers: 10,
-      storageUnit: "TB",
-      totalStorageAllowed: 1,
-      digitalContractSignatures: 100,
       sequence: 3,
-      pagarMeProductionPlanId: "plan_DovP3L2CmCexVnmJ",
-      pagarMeTestingPlanId: "plan_bPaLXxwTGTpO60pj"
+      pagarMeProductionPlanId: "plan_qGY57ErHaHM9OW0K",
+      pagarMeTestingPlanId: "plan_O7NGk0MsRsxVv4z1"
     }
   ];
 

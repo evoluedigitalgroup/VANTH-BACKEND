@@ -42,7 +42,7 @@ const configures = [
     configType: "CONFIGURE",
     key: TRIAL_EXP_DAYS,
     label: "Trial expire days",
-    value: 30,
+    value: 7,
     valueType: "string",
     isPublic: true,
   },
