@@ -11,7 +11,7 @@ import DocumentFile from "../../models/documentFile";
 import authentication from "../../services/authentication";
 import ContractTemplates from "../../models/contractTemplates";
 import fs from 'fs';
-import * as pdf2img from 'pdf-img-convert';
+//import * as pdf2img from 'pdf-img-convert';
 
 import * as docusign from "../../services/docusign";
 import { generateUrlPdfToBase64 } from "../../helpers/docusign";
@@ -115,34 +115,6 @@ router.post("/create-template", authentication.UserAuthValidateMiddleware, async
 
     console.log('uploadPreviewFile : ', uploadPreviewFile);
 
-    var outputImages = await pdf2img.convert(previewPathToTempFile);
-
-    if (outputImages.length === 0) {
-      res.json({
-        success: true,
-        data: null,
-        message: lang.SOMETHING_WENT_WRONG.PR,
-      });
-    }
-
-    fs.writeFileSync(originalPathToTempFileImg, outputImages[0]);
-
-
-    const filePathValue = originalPathToTempFileImg;
-
-    const imgPath = filePathValue;
-    const imgName = filePathValue.split('/').pop();
-
-
-    //  Upload preview image file to aws folder
-    const previewImageFileAwsRecord = await awsUploadFile(
-      imgPath,
-      `${company}/contract-templates/${id}/${imgName}`,
-    )
-
-    //  Delete the uploaded preview image file
-    await utility.deleteImage(imgPath);
-
     //  Upload preview file to aws folder
     const previewFileAwsRecord = await awsUploadFile(
       previewPathToTempFile,
@@ -226,7 +198,7 @@ router.post("/create-template", authentication.UserAuthValidateMiddleware, async
       templateSchema,
       originalFile: originalFileAwsRecord.Location,
       templatePreviewFile: previewFileAwsRecord.Location,
-      templatePreviewImageFile: previewImageFileAwsRecord.Location,
+      templatePreviewImageFile: "https://fastly.picsum.photos/id/180/367/267.jpg?hmac=XAmHD3CeF1SZodNhSTtrCVFsSUnlee5bjFyJsrqxyCM",
       templateFile: usableFileAwsRecord.Location,
     });
 
