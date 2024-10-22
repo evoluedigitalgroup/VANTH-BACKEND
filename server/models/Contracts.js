@@ -75,11 +75,11 @@ const ContractSchema = mongoose.Schema(
       type: [ContractDocumentSchema],
       default: []
     },
-    docusignEnvelopeId: {
+    signatureEnvelopeId: {
       type: String,
       default: null
     },
-    docusignData: {
+    signatureProviderData: {
       type: Object,
       default: null
     },

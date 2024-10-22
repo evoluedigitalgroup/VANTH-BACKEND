@@ -11,10 +11,6 @@ import DocumentFile from "../../models/documentFile";
 import authentication from "../../services/authentication";
 import ContractTemplates from "../../models/contractTemplates";
 import fs from 'fs';
-//import * as pdf2img from 'pdf-img-convert';
-
-import * as docusign from "../../services/docusign";
-import { generateUrlPdfToBase64 } from "../../helpers/docusign";
 import Contracts from "../../models/Contracts";
 import mongoose from "mongoose";
 import config from "../../config";
@@ -299,80 +295,7 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
     contractRequest.contractDocumentIds = contractDocumentIds;
     await contractRequest.save();
 
-    const token = await docusign.getDocuSignJwtToken()
-
-    const signersEmail = contactDetailsList.map(contact => contact.email)
-    const signersName = contactDetailsList.map(contact => contact.name)
-    const signersClientId = contactDetailsList.map(contact => contact.uuid)
-
-    const args = {};
-    args.accessToken = token;
-    args.signersEmail = signersEmail;
-    args.signersName = signersName;
-    args.signersClientId = signersClientId;
-    args.dsPingUrl = null;
-
-    args.envelopeArgs = [];
-
-    for (let i = 0; i < templateBase64Data.length; i++) {
-      const obj = templateBase64Data[i];
-
-      const envelopeArgs = {};
-      envelopeArgs.documentId = obj.documentId;
-      envelopeArgs.signersEmail = signersEmail;
-      envelopeArgs.signersName = signersName;
-      envelopeArgs.recipientId = signersClientId;
-      envelopeArgs.documentName = obj.name; //
-      envelopeArgs.signersClientId = signersClientId; //
-      envelopeArgs.documentBase64 = obj.documentBase64; //
-      args.envelopeArgs.push(envelopeArgs);
-    }
-
-    const resultsData = await docusign.createEnvelopes(args);
-
-    console.log('resultsData : ', resultsData);
-
-    // args.envelopeId = resultsData.envelopeId;
-    // const view = docusign.makeRecipientViewRequest(args);
-    // console.log('view : ', view);
-    // const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view)
-    // console.log('results : ', results);
-
-
-
-    contractRequest.docusignEnvelopeId = resultsData.envelopeId;
-    
-    contractRequest.recipient.map((val, i) => {
-      contractRequest.recipientsStatus.push({
-        recipient: val,
-        status: 'pending'
-      });
-
-      const sentEmail = contactDetailsList.filter((item) => item.id == val).map(item => item.email);
-
-      sentEmail.forEach((email, _) => {
-        const redirectLink = `${config.host}/requested-signature/${contractRequest?.company}/${contractRequest?.uuid}/${contractRequest?.docusignEnvelopeId}/${val}`;
-      
-        const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #0068FF; font-size: 28px; margin-bottom: 20px;">Vanth Docs System & Docusign</h1>
-          <h2 style="color: #0068FF; font-size: 24px; margin-bottom: 20px;">Por favor, assine seu contrato!</h2>
-          <p style="font-size: 16px;">Este email contém um link seguro da Vanth Docs System. Não compartilhe este email, link ou código de acesso com outras pessoas.</p>
-          <p style="font-size: 16px;">Assine documentos eletronicamente em minutos. É seguro, protegido e legalmente vinculativo. Esteja você em um escritório, em casa ou em outro lugar, ou mesmo em outro país, o nosso parceiro DocuSign fornece uma solução profissional confiável de gerenciamento de transações digitais (Digital Transaction Management™).</p>
-          <p style="font-size: 16px;">Tem alguma dúvida sobre o documento? Se você precisar modificar o documento ou tiver dúvidas sobre os detalhes do documento, entre em contato com o remetente enviando um email diretamente para ele.</p>
-          <p style="font-size: 16px;">Se você tiver problemas para assinar o documento, visite a página <a href="https://vanthdocs.com.br/help" style="color: #0068FF; text-decoration: none;">Ajuda com a assinatura</a> em nosso Centro de suporte.</p>
-          <p style="font-size: 16px;">Acesse o site <a href="https://vanthdocs.com.br" style="color: #0068FF; text-decoration: none;">vanthdocs.com.br</a>.</p>
-          <p style="font-size: 16px;">Atenciosamente,<br/>Equipe Vanth Docs</p>
-          <div style="text-align: center; margin-top: 20px;">
-            <a href="${redirectLink}" style="display: inline-block; background-color: #0068FF; color: #ffffff; font-size: 18px; text-decoration: none; padding: 10px 20px; border-radius: 5px;">Clique aqui para assinar o contrato!</a>
-          </div>
-        </div>
-        `;  
-    
-        sendMail(email, 'Assinatura de Contrato - Vanth Docs System', htmlContent);
-      })
-    })
-
+    // TODO Send doc to sign and send e-mail.
     contractRequest.ableToSign = selectedContacts[0]
     await contractRequest.save();
 
@@ -397,12 +320,14 @@ router.post("/create-contract", authentication.UserAuthValidateMiddleware, async
 router.post("/get-contract-details", async (req, res) => {
   console.log('req.body : ', req.body);
   
-  const { companyId, contractId, docusignEnvelopeId, recipientViwer } = req.body;
+  // TODO get Signed contracts from API or S3
+
+  const { companyId, contractId, signatureEnvelopeId, recipientViwer } = req.body;
 
   const contractRequest = await Contracts.findOne({
     company: companyId,
     uuid: contractId,
-    docusignEnvelopeId
+    signatureEnvelopeId
   }).populate("company").populate("recipient");
 
   if (contractRequest.ableToSign != recipientViwer) {
@@ -426,7 +351,7 @@ router.post("/get-contract-details", async (req, res) => {
     contractRequest.verifier = uuidv4();
     await contractRequest.save();
 
-    const returnUrl = `${config.frontendUrl}/contract/docusign/return-url`;
+    const returnUrl = `${config.frontendUrl}/contract/signed-document/return-url`;
 
     const args = {};
     args.dsReturnUrl = `${returnUrl}?requestId=${contractRequest.uuid}&contractIdentifier=${contractRequest.identifier}&verifier=${contractRequest.verifier}&recipientViwer=${recipientViwer}`;
@@ -451,16 +376,11 @@ router.post("/get-contract-details", async (req, res) => {
     args.signerName = signerName;
     args.signerClientId = signerClientId;
 
-    args.envelopeId = contractRequest.docusignEnvelopeId;
+    args.envelopeId = contractRequest.signatureEnvelopeId;
 
     console.log(args)
 
-    // Making the view
-    const view = docusign.makeRecipientViewRequest(args);
-
-    //  Generating the recipient view (Embedded signing view)
-    const token = await docusign.getDocuSignJwtToken();
-    const results = await docusign.generateRecipientViewRequest(token, args.envelopeId, view);
+    // TODO generate URL from signed document
 
     console.log('results : ', results);
 
@@ -468,7 +388,7 @@ router.post("/get-contract-details", async (req, res) => {
       ...contractRequest._doc,
     }
 
-    returnData.docusignUrl = results.url + '&locale=pt_BR';
+    returnData.signedDocumentUrl = results.url + '&locale=pt_BR';
 
     console.log('returnData : ', returnData);
 
@@ -510,8 +430,6 @@ router.post("/update-contract-status", async (req, res) => {
   if (contractRequest) {
     console.log('Started working on downloading & storing the document on the cloud');
 
-    const token = await docusign.getDocuSignJwtToken();
-
     const updatedContractDocumentIds = [];
 
     for (let i = 0; i < contractRequest.contractDocumentIds.length; i++) {
@@ -528,15 +446,9 @@ router.post("/update-contract-status", async (req, res) => {
       const fileExt = originalFileName.split('.').pop();
 
       const signedFileName = `${fileNameValue}_signed.${fileExt}`;
-
-      const signedFileUrl = await docusign.downloadDocument(
-        token,
-        contractRequest.company,
-        contractRequest.docusignEnvelopeId,
-        documentId,
-        signedFileName
-      );
-
+      
+      // TODO get signed documents
+      signedFileUrl = signedFileName;
       updatedContractDocumentIds.push({
         ...doc,
         signedDocument: signedFileUrl
