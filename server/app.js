@@ -38,7 +38,7 @@ mongoose
     //  on Connect mongoose
   })
   .catch(err => {
-    console.error("error : ", err);
+    console.error("error on connect do mongoose : ", err);
     //  on catch mongoose
   });
 
