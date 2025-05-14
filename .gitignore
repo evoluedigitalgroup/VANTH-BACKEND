@@ -1,8 +1,8 @@
 node_modules
 dist-server
+.env
 #*.pem
 # .env.*
-#.env
 #customScripts
 #todo.c
 #.DS_Store
