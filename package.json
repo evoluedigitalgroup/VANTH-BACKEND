@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "npm run prod",
+    "prestart": "npm run build",
+    "start": "node ./dist-server/bin/www.js",
     "build": "npm-run-all clean transpile",
     "server": "node ./dist-server/bin/www",
     "pm2-server": "pm2 start ./dist-server/bin/www.js --name \"backend\"",
