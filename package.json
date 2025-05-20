@@ -6,15 +6,8 @@
     "prestart": "npm run build",
     "start": "node ./dist-server/bin/www.js",
     "build": "npm-run-all clean transpile",
-    "server": "node ./dist-server/bin/www",
-    "pm2-server": "pm2 start ./dist-server/bin/www.js --name \"backend\"",
-    "dev": "npm run env NODE_ENV=development &&  npm-run-all build server",
-    "prod": "npm run env NODE_ENV=production &&  npm-run-all pm2-server",
-    "prod-build": "npm run env NODE_ENV=production && npm-run-all build",
     "transpile": "babel ./server --out-dir dist-server",
-    "clean": "rimraf dist-server",
-    "watch:dev": "nodemon",
-    "poststart": "node ./node_modules/pm2/bin/pm2 logs"
+    "clean": "rimraf dist-server"
   },
   "dependencies": {
     "@babel/cli": "^7.13.10",
