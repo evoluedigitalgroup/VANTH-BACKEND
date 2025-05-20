@@ -5,7 +5,7 @@
   "scripts": {
     "prestart": "npm run build",
     "start": "node ./dist-server/bin/www.js",
-    "build": "npm-run-all clean transpile",
+    "build": "npm run clean && npm run transpile",
     "transpile": "babel ./server --out-dir dist-server",
     "clean": "rimraf dist-server"
   },
