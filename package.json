@@ -5,6 +5,7 @@
   "scripts": {
     "start": "npm run prod",
     "prod": "node ./dist-server/bin/www.js",
+    "prestart": "npm run build",
     "build": "npm run clean && npm run transpile",
     "transpile": "babel ./server --out-dir dist-server",
     "clean": "rimraf dist-server"
