@@ -30,17 +30,17 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.engine("ejs", ejs.__express);
 
-mongoose
-  .onConnect()
-  .then(() => {
-    onConnectDb.init();
-    console.log("DB CONNECTED !!....");
-    //  on Connect mongoose
-  })
-  .catch(err => {
-    console.error("error : ", err);
-    //  on catch mongoose
-  });
+// mongoose
+//   .onConnect()
+//   .then(() => {
+//     onConnectDb.init();
+//     console.log("DB CONNECTED !!....");
+//     //  on Connect mongoose
+//   })
+//   .catch(err => {
+//     console.error("error : ", err);
+//     //  on catch mongoose
+//   });
 
 app.get("/", (req, res) => {
   res.status(200).json({
