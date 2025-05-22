@@ -78,7 +78,7 @@ export const credentials = env => {
 
   console.log("Loading env ", env);
   console.log("Loading config ", config);
-  
+
   if (env === "local") {
     config.port = PORT;
     config.mongoHost = LOCAL_MONGO_HOST;
@@ -109,7 +109,7 @@ export const credentials = env => {
     return config;
   } else {
     config.port = PRODUCTION_PORT;
-    config.mongoHost = PRODUCTION_MONGO_HOST;
+    config.mongoHost = "mongodb+srv://leonardovanni:U3mOmnGPDgRUEU91@epicora-software-house.z1bh4.mongodb.net/vanth-epicora?retryWrites=true&w=majority";
 
     config.host = PRODUCTION_HOST;
 
