@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "npm run prod",
+    "start": "node dist/main",
     "prod": "node ./dist-server/bin/www.js",
     "prestart": "npm run build",
     "build": "npm run clean && npm run transpile",
