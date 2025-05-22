@@ -75,9 +75,6 @@ export const credentials = env => {
   config.defaultImage = `${LOCAL_HOST}/temp/default_image.webp`;
 
   config.timeZone = TIMEZONE;
-
-  console.log("Loading env ", env);
-  console.log("Loading config ", config);
   
   if (env === "local") {
     config.port = PORT;

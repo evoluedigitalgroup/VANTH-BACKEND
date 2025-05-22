@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: Create deployment package
-        run: zip -r deploy-package.zip . -x "*.git/*" "node_modules/*"
+        run: zip -r $GITHUB_SHA.zip . -x "*.git/*" "node_modules/*"
       
       - name: Upload to S3
         env:
@@ -31,7 +31,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws s3 cp deploy-package.zip s3://elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.AWS_ACCOUNT_ID }}/deploy-package.zip
+          aws s3 cp $GITHUB_SHA.zip s3://elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.AWS_ACCOUNT_ID }}/$GITHUB_SHA.zip
 
       - name: Deploy to Elastic Beanstalk
         env:
@@ -48,7 +48,7 @@ jobs:
           aws elasticbeanstalk create-application-version \
             --application-name "VanthAPI" \
             --version-label $GITHUB_SHA \
-            --source-bundle S3Bucket="elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.AWS_ACCOUNT_ID }}",S3Key="deploy-package.zip"
+            --source-bundle S3Bucket="elasticbeanstalk-${{ secrets.AWS_REGION }}-${{ secrets.AWS_ACCOUNT_ID }}",S3Key="$GITHUB_SHA.zip"
 
           aws elasticbeanstalk update-environment \
             --environment-name $ENVIRONMENT_NAME \
