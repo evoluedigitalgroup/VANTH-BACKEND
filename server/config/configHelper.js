@@ -1,5 +1,6 @@
 /* eslint-disable global-require */
 import dotEnv from "dotenv";
+import { cloneWith } from "lodash";
 dotEnv.config();
 
 export const credentials = env => {
@@ -75,6 +76,9 @@ export const credentials = env => {
 
   config.timeZone = TIMEZONE;
 
+  console.log("Loading env ", env);
+  console.log("Loading config ", config);
+  
   if (env === "local") {
     config.port = PORT;
     config.mongoHost = LOCAL_MONGO_HOST;
