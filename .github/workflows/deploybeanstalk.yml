@@ -40,7 +40,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            ENVIRONMENT_NAME="VanthAPI-prd"
+            ENVIRONMENT_NAME="VanthAPI-prod"
           elif [ "${{ github.ref }}" == "refs/heads/develop" ]; then
             ENVIRONMENT_NAME="vanth-api-hml"
           fi
