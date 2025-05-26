@@ -1,14 +1,14 @@
-import express from "express";
-import path from "path";
-import logger from "morgan";
 import cors from "cors";
 import ejs from "ejs";
+import express from "express";
+import logger from "morgan";
+import path from "path";
 
-import routes from "./routes";
-import onConnectDb from "./helpers/scripts/onConnectDb";
-import mongoose from "./services/mongoose";
-import config from "./config/index";
 import packageJson from "../package.json";
+import config from "./config/index";
+import onConnectDb from "./helpers/scripts/onConnectDb";
+import routes from "./routes";
+import mongoose from "./services/mongoose";
 
 const app = express();
 
@@ -50,7 +50,7 @@ mongoose
     onConnectDb.init();
     console.log("✅ MongoDB conectado com sucesso!");
   })
-  .catch((err) => {
+  .catch(err => {
     console.error("❌ Erro ao conectar no MongoDB:", err);
   });
 
