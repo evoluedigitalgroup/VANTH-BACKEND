@@ -22,15 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
+      - name: Build the project
         run: npm run build
 
       - name: Create deployment package
-        run: |
-          mkdir bundle
-          cp -r dist-server package*.json Procfile bundle/
-          cd bundle
-          zip -r ../$GITHUB_SHA.zip .
+        run: zip -r $GITHUB_SHA.zip . -x "*.git/*" "node_modules/*"
 
       - name: Upload to S3
         env:
