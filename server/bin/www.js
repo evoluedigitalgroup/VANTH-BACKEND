@@ -3,10 +3,10 @@
 /**
  * Module dependencies.
  */
-import "regenerator-runtime";
-import app from "../app";
 import debugLib from "debug";
 import http from "http";
+import "regenerator-runtime";
+import app from "../app";
 import config from "../config/index";
 
 const debug = debugLib("your-project-name:server");

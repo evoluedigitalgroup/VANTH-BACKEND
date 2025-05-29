@@ -52,8 +52,8 @@ mongoose
   });
 
 // Inicialização do servidor
-app.listen(config.port, () => {
-  console.log(`🚀 Servidor rodando na porta ${config.port}`);
-});
+// app.listen(config.port, () => {
+//   console.log(`🚀 Servidor rodando na porta ${config.port}`);
+// });
 
 export default app;
