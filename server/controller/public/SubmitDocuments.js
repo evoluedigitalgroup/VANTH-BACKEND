@@ -1,12 +1,11 @@
 import express from "express";
 import multiparty from "multiparty";
-import Contacts from "../../models/Contacts";
-import validator from "../../validator/public/";
-import lang from "./../../helpers/locale/lang";
-import utility from "../../helpers/utility";
-import aws from "../../services/aws";
 import path from "path";
+import utility from "../../helpers/utility";
+import Contacts from "../../models/Contacts";
 import DocumentFile from "../../models/documentFile";
+import aws from "../../services/aws";
+import lang from "./../../helpers/locale/lang";
 
 const awsUploadFile = aws.uploadFile;
 
@@ -133,8 +132,9 @@ router.post("/submit-documents", async (req, res) => {
 router.post("/update-contact", async (req, res) => {
   const { companyId, contactId, requestId, otherInformation } = req.body;
 
-  const findContact = await Contacts.findById(contactId).populate("documentRequest");
-
+  const findContact = await Contacts.findById(contactId).populate(
+    "documentRequest",
+  );
 
   if (findContact.company != companyId) {
     return res.json({ success: false, message: "Invalid company", data: null });
@@ -145,11 +145,11 @@ router.post("/update-contact", async (req, res) => {
   }
 
   const updatedContact = await Contacts.findByIdAndUpdate(contactId, {
-    otherInformation
+    otherInformation,
   });
 
   res.json({ success: true, message: "Update Contact" });
-})
+});
 
 router.post("/address-proof", async (req, res) => {
   const form = new multiparty.Form();
@@ -267,7 +267,11 @@ router.post("/address-proof", async (req, res) => {
 });
 
 router.post("/attachment-document", async (req, res) => {
-  const form = new multiparty.Form();
+  const form = new multiparty.Form({
+    maxFieldsSize: 20 * 1024 * 1024, // 20MB for all fields
+    maxFilesSize: 100 * 1024 * 1024, // 100MB for all files combined
+    maxFileSize: 50 * 1024 * 1024, // 50MB per file
+  });
 
   form.parse(req, async (err, fields, files) => {
     console.log("fields", fields);
