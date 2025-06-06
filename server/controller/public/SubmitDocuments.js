@@ -274,6 +274,19 @@ router.post("/attachment-document", async (req, res) => {
   });
 
   form.parse(req, async (err, fields, files) => {
+    if (err) {
+      if (err.status === 413 || err.message.includes("size")) {
+        return res.status(413).json({
+          success: false,
+          message: "File is too large. Maximum file size is 50MB.",
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        message: lang.SOMETHING_WENT_WRONG.PR,
+      });
+    }
+
     console.log("fields", fields);
     console.log("files", files);
 
