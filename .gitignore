@@ -1,0 +1,8 @@
+node_modules
+dist-server
+#*.pem
+# .env.*
+.env
+#customScripts
+#todo.c
+#.DS_Store

@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" />
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <meta content="width=device-width" name="viewport" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <title></title>
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        -webkit-text-size-adjust: 100%;
+        font-family: "Open Sans";
+        font-weight: 300;
+      }
+
+      .main-container {
+        background-color: #f7f7f7;
+        padding: 50px;
+        padding-bottom: 20px;
+      }
+
+      .main-body-container {
+        max-width: 700px;
+        width: 100%;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .header-logo-container {
+        /* background-image: linear-gradient(
+          180deg,
+          #ff5a01 1.56%,
+          #fe2d66 26.56%,
+          #c0387d 54.17%,
+          #734699 97.4%
+        ); */
+        background-image: linear-gradient(
+          180deg,
+          #fffefd75 1.56%,
+          #fc97b24f 26.56%,
+          #e382b3a1 54.17%,
+          #9656ccd6 97.4%
+        );
+      }
+
+      .main-logo {
+        max-height: 100px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        padding-top: 50px;
+        padding-bottom: 50px;
+      }
+
+      .radius-block {
+        background-color: white;
+        height: 50px;
+        border-top-left-radius: 50px;
+        border-top-right-radius: 50px;
+      }
+
+      .details-container {
+        background-color: white;
+        align-items: center;
+        flex-direction: column;
+        padding: 50px;
+        padding-top: 10px;
+      }
+
+      .body-title {
+        font-size: 25px;
+        font-weight: bold;
+        color: #734699;
+        text-align: center;
+      }
+
+      .body-content {
+        margin-top: 50px;
+        width: 100%;
+      }
+
+      .copyright-text {
+        font-size: 12px;
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      @media only screen and (max-width: 600px) {
+        .main-container {
+          padding: 5px;
+        }
+
+        .details-container {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="clean-body">
+    <div class="main-container">
+      <div class="main-body-container">
+        <div class="header-logo-container">
+          <img
+            class="main-logo"
+            src="https://inova-juris-test-file-server.s3.sa-east-1.amazonaws.com/assets/inova_juris_logo.png"
+          />
+          <div class="radius-block"></div>
+        </div>
+        <div class="details-container">
+          <div class="body-title">{{email_title_strong}}</div>
+          <div class="body-content">
+            <div>
+              {{email_main_content}}
+              <br /><br />
+              Cumprimentos,
+              <br />
+              Inova Juris Team.
+            </div>
+          </div>
+        </div>
+        <div class="copyright-text">
+          <a target="_blank" href="https://www.inovajuris.com.br/"
+            >Copyright ©
+            <script>
+              document.write(new Date().getFullYear());
+            </script>
+            by INOVAJURIS®</a
+          >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
