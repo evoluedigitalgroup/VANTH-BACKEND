@@ -14,22 +14,25 @@ export async function twilioClientSenderSMS(bodyMessage, clientNumber) {
     })
     .then()
     .catch(err => {
-      console.log(err)
+      console.log(err);
     });
 }
 
-export async function twilioClientSenderWhatsApp(clientNumber, verificationLink) {
-  const cleanClientNumber = clientNumber.replace(/\s/g, '');
+export async function twilioClientSenderWhatsApp(
+  clientNumber,
+  verificationLink,
+) {
+  const cleanClientNumber = clientNumber.replace(/\s/g, "");
 
   const formattedNumber = `whatsapp:+55${cleanClientNumber}`;
   const formattedFromNumber = `whatsapp:${config.twilioPhoneNumberWhatsApp}`;
 
   try {
     await client.messages.create({
-      contentSid: 'HX51cf94a73ed11d2ae39769e66478e451',
+      contentSid: "HX70b85608915062471e640998d85ee35b",
       contentVariables: JSON.stringify({ 3: verificationLink }),
       from: formattedFromNumber,
-      messagingServiceSid: 'MG756220f26c2bb38267f555d8cc11510c',
+      messagingServiceSid: "MG48d59ce1cc557714103abf783ef1bf69",
       to: formattedNumber,
     });
     console.log("Mensagem enviada via WhatsApp com sucesso!");
@@ -39,4 +42,3 @@ export async function twilioClientSenderWhatsApp(clientNumber, verificationLink)
     console.error("Erro ao enviar mensagem via WhatsApp:", err);
   }
 }
-
